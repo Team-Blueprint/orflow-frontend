@@ -50,11 +50,16 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
   const currentPath = router.state.location.pathname
   const projectRef = useRef<HTMLDivElement>(null)
+  const userMenuRef = useRef<HTMLDivElement>(null)
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (projectRef.current && !projectRef.current.contains(e.target as Node)) {
         setProjectOpen(false)
+      }
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setUserMenuOpen(false)
       }
     }
     document.addEventListener("mousedown", handleClickOutside)
@@ -237,8 +242,30 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             <span className="text-[10px] font-mono px-2 py-0.5 bg-zinc-900 text-zinc-400 border border-hairline">
               {currentProject.environment === "live" ? "LIVE" : "SANDBOX"}
             </span>
-            <div className="w-7 h-7 bg-paper border border-hairline text-ink font-mono text-[10px] flex items-center justify-center cursor-pointer hover:border-hairline-strong">
-              OR
+            <div ref={userMenuRef} className="relative">
+              <button
+                type="button"
+                onClick={() => setUserMenuOpen((o) => !o)}
+                className="w-7 h-7 bg-paper border border-hairline text-ink font-mono text-[10px] flex items-center justify-center cursor-pointer hover:border-hairline-strong transition-colors"
+              >
+                OR
+              </button>
+
+              {userMenuOpen && (
+                <div className="absolute right-0 top-full mt-1 w-56 border border-hairline bg-paper z-50">
+                  <div className="p-3 border-b border-hairline">
+                    <p className="text-xs font-semibold text-ink">Orflow User</p>
+                    <p className="text-[11px] text-ink-soft mt-0.5">user@orflow.io</p>
+                  </div>
+                  <Link
+                    to="/sign-in"
+                    onClick={() => setUserMenuOpen(false)}
+                    className="flex items-center px-3 py-2 text-xs text-ink-soft hover:text-ink hover:bg-zinc-900/40 transition-colors cursor-pointer"
+                  >
+                    Log out
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         </header>
