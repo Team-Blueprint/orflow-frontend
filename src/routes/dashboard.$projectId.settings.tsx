@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router"
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { ApiKeyField } from "@/components/api-key-field"
 
-export const Route = createFileRoute("/settings")({
+export const Route = createFileRoute("/dashboard/$projectId/settings")({
   component: Settings,
 })
 

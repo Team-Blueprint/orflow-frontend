@@ -17,18 +17,6 @@ interface NavItem {
   icon: typeof Widget3
 }
 
-const mainNav: NavItem[] = [
-  { label: "Dashboard", to: "/dashboard", icon: Widget3 },
-  { label: "Subscriptions", to: "#", icon: Refresh },
-  { label: "Plans", to: "#", icon: Bill },
-  { label: "Customers", to: "#", icon: UsersGroupRounded },
-  { label: "Webhooks", to: "#", icon: WebhookIcon },
-]
-
-const bottomNav: NavItem[] = [
-  { label: "Settings", to: "/settings", icon: Settings },
-]
-
 interface DashboardLayoutProps {
   children: ReactNode
 }
@@ -36,19 +24,32 @@ interface DashboardLayoutProps {
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [projectOpen, setProjectOpen] = useState(false)
-  const [currentProject, setCurrentProject] = useState(projects[0])
   const router = useRouter()
+
+  const currentPath = router.state.location.pathname
+  const pathParts = currentPath.split("/").filter(Boolean)
+
+  // Extract projectId from path: /dashboard/$projectId or /dashboard/$projectId/...
+  const projectIdIndex = pathParts.findIndex((p) => p === "dashboard") + 1
+  const currentProjectId = pathParts[projectIdIndex] || projects[0].id
+  const currentProject = projects.find((p) => p.id === currentProjectId) || projects[0]
+
+  // Extract sub-view after project ID to maintain context when switching projects
+  const subView = pathParts.slice(projectIdIndex + 1).join("/")
 
   function closeSidebar() {
     setSidebarOpen(false)
   }
 
   function selectProject(p: Project) {
-    setCurrentProject(p)
     setProjectOpen(false)
+    const base = `/dashboard/${p.id}`
+    const target = subView ? `${base}/${subView}` : base
+    router.navigate({ to: target })
   }
 
-  const currentPath = router.state.location.pathname
+  const isActive = (to: string) => currentPath === to
+  const isProjectPath = (path: string) => currentPath.startsWith(path)
   const projectRef = useRef<HTMLDivElement>(null)
   const userMenuRef = useRef<HTMLDivElement>(null)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
@@ -65,6 +66,20 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     document.addEventListener("mousedown", handleClickOutside)
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
+
+  const projectBase = `/dashboard/${currentProjectId}`
+
+  const mainNav: NavItem[] = [
+    { label: "Dashboard", to: projectBase, icon: Widget3 },
+    { label: "Subscriptions", to: "#", icon: Refresh },
+    { label: "Plans", to: "#", icon: Bill },
+    { label: "Customers", to: "#", icon: UsersGroupRounded },
+    { label: "Webhooks", to: "#", icon: WebhookIcon },
+  ]
+
+  const bottomNav: NavItem[] = [
+    { label: "Settings", to: `${projectBase}/settings`, icon: Settings },
+  ]
 
   const navLinkClass = (to: string) =>
     currentPath === to
@@ -110,7 +125,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       >
         {/* Logo */}
         <Link
-          to="/dashboard"
+          to={projectBase}
           onClick={closeSidebar}
           className="h-14 flex items-center px-6 border-b border-hairline font-sans font-bold text-sm tracking-tight text-white cursor-pointer"
         >
