@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react"
+import { useState, useRef, useEffect, type ReactNode } from "react"
 import { Link, useRouter } from "@tanstack/react-router"
 import { Widget3, Refresh, Bill, UsersGroupRounded, Settings } from "@/lib/icons"
 import { WebhookIcon } from "@/components/icons"
@@ -49,6 +49,17 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   const currentPath = router.state.location.pathname
+  const projectRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (projectRef.current && !projectRef.current.contains(e.target as Node)) {
+        setProjectOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
 
   const navLinkClass = (to: string) =>
     currentPath === to
@@ -102,14 +113,28 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </Link>
 
         {/* Project selector */}
-        <div className="relative mx-4 my-4">
+        <div ref={projectRef} className="relative mx-4 my-4">
           <button
             type="button"
             onClick={() => setProjectOpen((o) => !o)}
             className="w-full bg-paper/60 border border-hairline px-3 py-2 text-xs font-mono text-ink flex items-center justify-between hover:border-hairline-strong transition-colors cursor-pointer"
           >
             <span className="truncate">{currentProject.name}</span>
-            <span className="text-zinc-600 font-mono text-[10px]">::</span>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              className="text-zinc-500 shrink-0"
+            >
+              {projectOpen ? (
+                <path d="M18 15l-6-6-6 6" />
+              ) : (
+                <path d="M6 9l6 6 6-6" />
+              )}
+            </svg>
           </button>
 
           {projectOpen && (
