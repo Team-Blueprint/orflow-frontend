@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, type ReactNode } from "react"
 import { Link, useRouter } from "@tanstack/react-router"
 import { Widget3, Refresh, Bill, UsersGroupRounded, Settings } from "@/lib/icons"
-import { WebhookIcon } from "@/components/icons"
+import { WebhookIcon, LogoIcon } from "@/components/icons"
 import { cn } from "@/lib/utils"
 
 type Project = { id: string; name: string; environment: "sandbox" | "live" }
@@ -104,7 +104,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             <path d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
-        <span className="text-sm font-bold tracking-tight text-white">Orflow</span>
+        <span className="text-sm font-bold tracking-tight text-white flex items-center gap-2">
+          <LogoIcon size={16} variant="white" />
+          Orflow
+        </span>
       </div>
 
       {/* Mobile backdrop */}
@@ -127,8 +130,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         <Link
           to={projectBase}
           onClick={closeSidebar}
-          className="h-14 flex items-center px-6 border-b border-hairline font-sans font-bold text-sm tracking-tight text-white cursor-pointer"
+          className="h-14 flex items-center gap-2 px-6 border-b border-hairline font-sans font-bold text-sm tracking-tight text-white cursor-pointer"
         >
+          <LogoIcon size={18} variant="white" />
           Orflow
         </Link>
 

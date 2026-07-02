@@ -1,6 +1,7 @@
 import { type FormEvent, useState } from "react"
 import { useRouter } from "@tanstack/react-router"
 import { ApiKeyField } from "@/components/api-key-field"
+import { LogoIcon } from "@/components/icons"
 import { cn } from "@/lib/utils"
 
 type Env = "sandbox" | "live"
@@ -33,7 +34,8 @@ export function OnboardingForm() {
       <div className="flex min-h-screen items-center justify-center bg-canvas px-4">
         <div className="w-full max-w-sm mx-auto">
           <a href="/" className="flex flex-col items-center justify-center mb-10 cursor-pointer group">
-            <span className="text-2xl font-extrabold text-ink tracking-tight">
+            <span className="flex items-center gap-2 text-2xl font-extrabold text-ink tracking-tight">
+              <LogoIcon size={24} variant="orange" />
               Create a project on{" "}
               <span className="font-serif italic text-primary">Orflow</span>
             </span>

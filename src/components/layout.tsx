@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { motion } from "motion/react"
 import { Link } from "@tanstack/react-router"
-import { GithubIcon } from "@/components/icons"
+import { GithubIcon, LogoIcon } from "@/components/icons"
 import { Button } from "@/components/ui/button"
 
 export function Nav() {
@@ -10,7 +10,8 @@ export function Nav() {
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sticky top-0 z-50">
       <nav className="flex items-center justify-between h-14 bg-zinc-950/80 backdrop-blur-lg border border-hairline px-6 w-full shadow-none">
-        <a href="/" className="font-sans font-bold text-sm text-white tracking-tight cursor-pointer">
+        <a href="/" className="font-sans font-bold text-sm text-white tracking-tight flex items-center gap-2 cursor-pointer">
+          <LogoIcon size={18} variant="white" />
           Orflow
         </a>
 
@@ -131,7 +132,8 @@ export function Footer() {
       <div className="max-w-7xl mx-auto px-6 py-16">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-12 mb-12">
           <div>
-            <a href="/" className="text-base font-semibold tracking-tight text-white cursor-pointer">
+            <a href="/" className="text-base font-semibold tracking-tight text-white flex items-center gap-2 cursor-pointer">
+          <LogoIcon size={18} variant="orange" />
               Orflow
             </a>
             <p className="mt-2 text-xs text-zinc-500 leading-relaxed">

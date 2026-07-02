@@ -1,6 +1,6 @@
 import { type FormEvent, useState } from "react"
 import { Link, useNavigate } from "@tanstack/react-router"
-import { GithubIcon } from "@/components/icons"
+import { GithubIcon, LogoIcon } from "@/components/icons"
 
 interface AuthFormProps {
   mode: "sign-in" | "sign-up"
@@ -32,7 +32,8 @@ export function AuthForm({ mode }: AuthFormProps) {
       <div className="flex min-h-screen items-center justify-center bg-canvas px-4">
         <div className="w-full max-w-sm mx-auto">
           <a href="/" className="flex flex-col items-center justify-center mb-10 cursor-pointer group">
-            <span className="text-2xl font-extrabold text-ink tracking-tight">
+            <span className="flex items-center gap-2 text-2xl font-extrabold text-ink tracking-tight">
+              <LogoIcon size={24} variant="orange" />
               {isSignIn ? "Log in to " : "Create an account on "}
               <span className="font-serif italic text-primary">Orflow</span>
             </span>
