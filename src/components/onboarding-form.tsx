@@ -136,7 +136,7 @@ export function OnboardingForm() {
                   </p>
                 </div>
 
-                <button type="button" className="btn-primary w-full text-sm font-bold py-3 cursor-pointer" onClick={() => window.location.href = "/settings"}>
+                <button type="button" className="btn-primary w-full text-sm font-bold py-3 cursor-pointer" onClick={() => window.location.href = "/dashboard/proj_1"}>
                   Go to dashboard
                 </button>
               </div>
