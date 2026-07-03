@@ -1,6 +1,6 @@
-import { motion } from "motion/react"
-import { Button } from "@/components/ui/button"
-import { fadeUp, bScale } from "./animations"
+import { motion } from "motion/react";
+import { Button } from "@/components/ui/button";
+import { fadeUp, bScale } from "./animations";
 
 export function CtaBanner() {
   return (
@@ -22,7 +22,7 @@ export function CtaBanner() {
           </p>
           <div className="relative flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Button asChild className="text-sm font-semibold px-7 py-3 h-auto">
-              <a href="#">Get started</a>
+              <a href="/sign-up">Get started</a>
             </Button>
             <motion.a
               {...bScale}
@@ -35,5 +35,5 @@ export function CtaBanner() {
         </div>
       </div>
     </motion.section>
-  )
+  );
 }
