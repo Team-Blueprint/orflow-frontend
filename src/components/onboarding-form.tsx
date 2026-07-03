@@ -1,23 +1,50 @@
 import { type FormEvent, useState } from "react"
 import { useRouter } from "@tanstack/react-router"
+import { apiClient } from "@/api/apiClient"
 import { ApiKeyField } from "@/components/api-key-field"
 import { LogoIcon } from "@/components/icons"
-import { cn } from "@/lib/utils"
 
-type Env = "sandbox" | "live"
+interface Keys {
+  sk_test: string
+  pk_test: string
+  sk_live: string
+  pk_live: string
+}
 
 export function OnboardingForm() {
   const router = useRouter()
   const [step, setStep] = useState(1)
-  const [projectName, setProjectName] = useState("")
-  const [description, setDescription] = useState("")
-  const [environment, setEnvironment] = useState<Env>("sandbox")
-  const [apiKey] = useState("sk_test_4f3c2a1b8d7e6f5c")
-  const [publishableKey] = useState("pk_test_8d7e6f5c4f3c2a1b")
+  const [keys, setKeys] = useState<Keys | null>(null)
+  const [isCreating, setIsCreating] = useState(false)
+  const [error, setError] = useState("")
 
-  function handleCreateProject(e: FormEvent) {
+  async function handleCreateProject(e: FormEvent) {
     e.preventDefault()
-    setStep(2)
+    setError("")
+    setIsCreating(true)
+    try {
+      const results = await Promise.all([
+        apiClient.post("/v1/auth/keys/create", { key_type: "sk_test" }),
+        apiClient.post("/v1/auth/keys/create", { key_type: "pk_test" }),
+        apiClient.post("/v1/auth/keys/create", { key_type: "sk_live" }),
+        apiClient.post("/v1/auth/keys/create", { key_type: "pk_live" }),
+      ])
+
+      const k: Keys = {
+        sk_test: results[0].data.value,
+        pk_test: results[1].data.value,
+        sk_live: results[2].data.value,
+        pk_live: results[3].data.value,
+      }
+      setKeys(k)
+
+      localStorage.setItem("orflow_api_key", k.sk_test)
+      setStep(2)
+    } catch (err: any) {
+      setError(err?.response?.data?.error?.message || err?.response?.data?.detail || "Failed to create API keys")
+    } finally {
+      setIsCreating(false)
+    }
   }
 
   return (
@@ -46,68 +73,29 @@ export function OnboardingForm() {
 
           {step === 1 && (
             <form onSubmit={handleCreateProject} className="flex flex-col gap-4">
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="project-name" className="text-xs font-bold uppercase tracking-wider text-ink-soft">
-                  Project name
-                </label>
-                <input
-                  id="project-name"
-                  type="text"
-                  value={projectName}
-                  onChange={(e) => setProjectName(e.target.value)}
-                  placeholder="My SaaS App"
-                  required
-                  className="w-full bg-zinc-900/40 border border-hairline text-sm text-ink px-4 py-3 placeholder:text-zinc-600 outline-none focus:border-hairline-strong transition-colors autofill:shadow-[inset_0_0_0px_1000px_rgba(24,24,27,0.4)] autofill:text-ink"
-                />
+              <div className="border border-primary/20 bg-primary-soft/30 px-4 py-3">
+                <p className="text-xs text-ink-soft leading-relaxed">
+                  We'll generate both <strong className="text-ink">sandbox</strong> and <strong className="text-ink">live</strong> API keys so you can develop and go to production seamlessly.
+                </p>
               </div>
 
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="project-desc" className="text-xs font-bold uppercase tracking-wider text-ink-soft">
-                  Description{" "}
-                  <span className="font-normal normal-case tracking-normal text-ink-soft/60">
-                    (optional)
-                  </span>
-                </label>
-                <input
-                  id="project-desc"
-                  type="text"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Subscription platform for..."
-                  className="w-full bg-zinc-900/40 border border-hairline text-sm text-ink px-4 py-3 placeholder:text-zinc-600 outline-none focus:border-hairline-strong transition-colors autofill:shadow-[inset_0_0_0px_1000px_rgba(24,24,27,0.4)] autofill:text-ink"
-                />
-              </div>
+              {error && (
+                <p className="text-xs text-red-400 bg-red-950/30 border border-red-900/50 px-3 py-2">
+                  {error}
+                </p>
+              )}
 
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-ink-soft">
-                  Environment
-                </label>
-                <div className="flex border border-hairline">
-                  {(["sandbox", "live"] as Env[]).map((env) => (
-                    <button
-                      key={env}
-                      type="button"
-                      onClick={() => setEnvironment(env)}
-                      className={cn(
-                        "flex-1 px-4 py-3 text-sm font-medium transition-all duration-150 cursor-pointer",
-                        environment === env
-                          ? "bg-primary text-white"
-                          : "bg-transparent text-ink hover:bg-zinc-900/60",
-                      )}
-                    >
-                      {env === "sandbox" ? "Sandbox" : "Live"}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <button type="submit" className="btn-primary w-full text-sm font-bold py-3 mt-1 cursor-pointer">
-                Create project
+              <button
+                type="submit"
+                disabled={isCreating}
+                className="btn-primary w-full text-sm font-bold py-3 mt-1 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isCreating ? "Generating keys..." : "Create project"}
               </button>
             </form>
           )}
 
-          {step === 2 && (
+          {step === 2 && keys && (
             <>
               <div className="text-center mb-10">
                 <span className="text-2xl font-extrabold text-ink tracking-tight">
@@ -118,17 +106,26 @@ export function OnboardingForm() {
                 </p>
               </div>
 
-              <div className="flex flex-col gap-5">
-                <ApiKeyField
-                  label="Secret key"
-                  value={apiKey}
-                  prefix="sk_test_"
-                />
-                <ApiKeyField
-                  label="Publishable key"
-                  value={publishableKey}
-                  prefix="pk_test_"
-                />
+              <div className="flex flex-col gap-6">
+                <div>
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-ink-soft mb-3">
+                    Sandbox
+                  </h3>
+                  <div className="flex flex-col gap-4">
+                    <ApiKeyField label="Secret key" value={keys.sk_test} prefix="sk_test_" />
+                    <ApiKeyField label="Publishable key" value={keys.pk_test} prefix="pk_test_" />
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-ink-soft mb-3">
+                    Live
+                  </h3>
+                  <div className="flex flex-col gap-4">
+                    <ApiKeyField label="Secret key" value={keys.sk_live} prefix="sk_live_" />
+                    <ApiKeyField label="Publishable key" value={keys.pk_live} prefix="pk_live_" />
+                  </div>
+                </div>
 
                 <div className="border border-primary/20 bg-primary-soft/30 px-4 py-3">
                   <p className="text-xs text-ink-soft">
