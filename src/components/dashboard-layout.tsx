@@ -1,73 +1,86 @@
-import { useState, useRef, useEffect, type ReactNode } from "react"
-import { Link, useRouter } from "@tanstack/react-router"
-import { Widget3, Refresh, Bill, UsersGroupRounded, Settings } from "@/lib/icons"
-import { WebhookIcon, LogoIcon } from "@/components/icons"
-import { cn } from "@/lib/utils"
+import { useState, useRef, useEffect, type ReactNode, type ElementType } from "react";
+import { Link, useRouter } from "@tanstack/react-router";
+import {
+  Widget3,
+  Refresh,
+  Bill,
+  UsersGroupRounded,
+  Settings,
+} from "@/lib/icons";
+import { WebhookIcon, LogoIcon } from "@/components/icons";
+import { cn } from "@/lib/utils";
 
-type Project = { id: string; name: string; environment: "sandbox" | "live" }
+type Project = { id: string; name: string; environment: "sandbox" | "live" };
 
 const projects: Project[] = [
   { id: "proj_1", name: "My SaaS App", environment: "sandbox" },
   { id: "proj_2", name: "Production App", environment: "live" },
-]
+];
 
 interface NavItem {
-  label: string
-  to: string
-  icon: typeof Widget3
+  label: string;
+  to: string;
+  icon: ElementType;
 }
 
 interface DashboardLayoutProps {
-  children: ReactNode
+  children: ReactNode;
 }
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [projectOpen, setProjectOpen] = useState(false)
-  const router = useRouter()
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [projectOpen, setProjectOpen] = useState(false);
+  const router = useRouter();
 
-  const currentPath = router.state.location.pathname
-  const pathParts = currentPath.split("/").filter(Boolean)
+  const currentPath = router.state.location.pathname;
+  const pathParts = currentPath.split("/").filter(Boolean);
 
   // Extract projectId from path: /dashboard/$projectId or /dashboard/$projectId/...
-  const projectIdIndex = pathParts.findIndex((p) => p === "dashboard") + 1
-  const currentProjectId = pathParts[projectIdIndex] || projects[0].id
-  const currentProject = projects.find((p) => p.id === currentProjectId) || projects[0]
+  const projectIdIndex = pathParts.findIndex((p) => p === "dashboard") + 1;
+  const currentProjectId = pathParts[projectIdIndex] || projects[0].id;
+  const currentProject =
+    projects.find((p) => p.id === currentProjectId) || projects[0];
 
   // Extract sub-view after project ID to maintain context when switching projects
-  const subView = pathParts.slice(projectIdIndex + 1).join("/")
+  const subView = pathParts.slice(projectIdIndex + 1).join("/");
 
   function closeSidebar() {
-    setSidebarOpen(false)
+    setSidebarOpen(false);
   }
 
   function selectProject(p: Project) {
-    setProjectOpen(false)
-    const base = `/dashboard/${p.id}`
-    const target = subView ? `${base}/${subView}` : base
-    router.navigate({ to: target })
+    setProjectOpen(false);
+    const base = `/dashboard/${p.id}`;
+    const target = subView ? `${base}/${subView}` : base;
+    router.navigate({ to: target });
   }
 
-  const isActive = (to: string) => currentPath === to
-  const isProjectPath = (path: string) => currentPath.startsWith(path)
-  const projectRef = useRef<HTMLDivElement>(null)
-  const userMenuRef = useRef<HTMLDivElement>(null)
-  const [userMenuOpen, setUserMenuOpen] = useState(false)
+  // const isActive = (to: string) => currentPath === to;
+  // const isProjectPath = (path: string) => currentPath.startsWith(path);
+  const projectRef = useRef<HTMLDivElement>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (projectRef.current && !projectRef.current.contains(e.target as Node)) {
-        setProjectOpen(false)
+      if (
+        projectRef.current &&
+        !projectRef.current.contains(e.target as Node)
+      ) {
+        setProjectOpen(false);
       }
-      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
-        setUserMenuOpen(false)
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(e.target as Node)
+      ) {
+        setUserMenuOpen(false);
       }
     }
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
-  }, [])
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
-  const projectBase = `/dashboard/${currentProjectId}`
+  const projectBase = `/dashboard/${currentProjectId}`;
 
   const mainNav: NavItem[] = [
     { label: "Dashboard", to: projectBase, icon: Widget3 },
@@ -75,19 +88,19 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     { label: "Plans", to: "#", icon: Bill },
     { label: "Customers", to: "#", icon: UsersGroupRounded },
     { label: "Webhooks", to: "#", icon: WebhookIcon },
-  ]
+  ];
 
   const bottomNav: NavItem[] = [
     { label: "Settings", to: `${projectBase}/settings`, icon: Settings },
-  ]
+  ];
 
   const navLinkClass = (to: string) =>
     currentPath === to
       ? "mx-3 px-3 py-2 bg-primary text-white font-sans text-sm font-semibold flex items-center gap-3 cursor-pointer border border-orange-600"
-      : "mx-3 px-3 py-2 text-ink-soft hover:text-ink hover:bg-paper/40 font-sans text-sm font-medium flex items-center gap-3 transition-colors cursor-pointer"
+      : "mx-3 px-3 py-2 text-ink-soft hover:text-ink hover:bg-paper/40 font-sans text-sm font-medium flex items-center gap-3 transition-colors cursor-pointer";
 
   const disabledClass =
-    "mx-3 px-3 py-2 text-ink-soft/40 font-sans text-sm font-medium flex items-center gap-3 cursor-not-allowed"
+    "mx-3 px-3 py-2 text-ink-soft/40 font-sans text-sm font-medium flex items-center gap-3 cursor-not-allowed";
 
   return (
     <div className="flex min-h-screen bg-canvas">
@@ -100,7 +113,14 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           style={{ minHeight: 44, minWidth: 44 }}
           aria-label="Open sidebar"
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
             <path d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
@@ -178,7 +198,14 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                   >
                     <span>{p.name}</span>
                     {p.id === currentProject.id && (
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                      >
                         <path d="M20 6L9 17l-5-5" />
                       </svg>
                     )}
@@ -188,7 +215,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               <div className="border-t border-hairline">
                 <Link
                   to="/new"
-                  onClick={() => { setProjectOpen(false); closeSidebar() }}
+                  onClick={() => {
+                    setProjectOpen(false);
+                    closeSidebar();
+                  }}
                   className="flex items-center px-3 py-2 text-xs font-mono text-ink-soft hover:text-ink hover:bg-paper/40 transition-colors cursor-pointer"
                 >
                   + New project
@@ -249,7 +279,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           <div className="flex items-center gap-2 text-xs font-mono text-ink-soft">
             Workspace
             <span className="text-zinc-700">/</span>
-            <span className="text-ink font-semibold">{currentProject.name}</span>
+            <span className="text-ink font-semibold">
+              {currentProject.name}
+            </span>
           </div>
 
           {/* System actions */}
@@ -273,8 +305,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               {userMenuOpen && (
                 <div className="absolute right-0 top-full mt-1 w-56 border border-hairline bg-paper z-50">
                   <div className="p-3 border-b border-hairline">
-                    <p className="text-xs font-semibold text-ink">Orflow User</p>
-                    <p className="text-[11px] text-ink-soft mt-0.5">user@orflow.io</p>
+                    <p className="text-xs font-semibold text-ink">
+                      Orflow User
+                    </p>
+                    <p className="text-[11px] text-ink-soft mt-0.5">
+                      user@orflow.io
+                    </p>
                   </div>
                   <Link
                     to="/sign-in"
@@ -290,10 +326,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </header>
 
         {/* Page content */}
-        <div className="flex-1 pt-14 md:pt-0">
-          {children}
-        </div>
+        <div className="flex-1 pt-14 md:pt-0">{children}</div>
       </main>
     </div>
-  )
+  );
 }
