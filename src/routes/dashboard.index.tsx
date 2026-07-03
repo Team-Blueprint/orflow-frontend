@@ -3,6 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router"
 import { AccountLayout } from "@/components/account-layout"
 import { ProjectCard } from "@/components/project-card"
 import { apiClient } from "@/api/apiClient"
+import { AxiosError } from "axios"
 
 interface Project {
   id: string
@@ -73,7 +74,11 @@ function DashboardHome() {
       setRevealedKey({ type: keyType, value: data.value })
       await fetchFreshKeys()
     } catch (err: any) {
-      setKeyError(err?.response?.data?.detail || "Failed to generate key")
+      if (err instanceof AxiosError && err.response?.data?.error?.message) {
+        setKeyError(err.response.data.error.message)
+      } else {
+        setKeyError(err?.response?.data?.detail || "Failed to generate key")
+      }
     } finally {
       setActionLoading(null)
     }
@@ -87,7 +92,11 @@ function DashboardHome() {
       setRevealedKey({ type: keyType, value: data.value })
       await fetchFreshKeys()
     } catch (err: any) {
-      setKeyError(err?.response?.data?.detail || "Failed to regenerate key")
+      if (err instanceof AxiosError && err.response?.data?.error?.message) {
+        setKeyError(err.response.data.error.message)
+      } else {
+        setKeyError(err?.response?.data?.detail || "Failed to regenerate key")
+      }
     } finally {
       setActionLoading(null)
     }
@@ -100,7 +109,11 @@ function DashboardHome() {
       await apiClient.post("/v1/auth/keys/revoke", { key_type: keyType })
       await fetchFreshKeys()
     } catch (err: any) {
-      setKeyError(err?.response?.data?.detail || "Failed to revoke key")
+      if (err instanceof AxiosError && err.response?.data?.error?.message) {
+        setKeyError(err.response.data.error.message)
+      } else {
+        setKeyError(err?.response?.data?.detail || "Failed to revoke key")
+      }
     } finally {
       setActionLoading(null)
     }

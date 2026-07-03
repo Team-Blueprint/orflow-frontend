@@ -27,7 +27,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         await login(email, password)
       } else {
         await signup(name, email, password)
-        navigate({ to: "/dashboard/new" })
+        navigate({ to: "/dashboard" })
       }
     } catch (err) {
       if (err instanceof AxiosError && err.response?.data?.error?.message) {

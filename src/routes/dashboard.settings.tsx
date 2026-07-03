@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { createFileRoute } from "@tanstack/react-router"
 import { AccountLayout } from "@/components/account-layout"
 import { apiClient } from "@/api/apiClient"
+import { AxiosError } from "axios"
 
 interface ApiKeys {
   pk_test: string | null
@@ -55,7 +56,11 @@ function AccountSettings() {
       setRevealedKey({ type: keyType, value: data.value })
       await fetchFreshKeys()
     } catch (err: any) {
-      setError(err?.response?.data?.detail || "Failed to generate key")
+      if (err instanceof AxiosError && err.response?.data?.error?.message) {
+        setError(err.response.data.error.message)
+      } else {
+        setError(err?.response?.data?.detail || "Failed to generate key")
+      }
     } finally {
       setActionLoading(null)
     }
@@ -69,7 +74,11 @@ function AccountSettings() {
       setRevealedKey({ type: keyType, value: data.value })
       await fetchFreshKeys()
     } catch (err: any) {
-      setError(err?.response?.data?.detail || "Failed to regenerate key")
+      if (err instanceof AxiosError && err.response?.data?.error?.message) {
+        setError(err.response.data.error.message)
+      } else {
+        setError(err?.response?.data?.detail || "Failed to regenerate key")
+      }
     } finally {
       setActionLoading(null)
     }
@@ -82,7 +91,11 @@ function AccountSettings() {
       await apiClient.post("/v1/auth/keys/revoke", { key_type: keyType })
       await fetchFreshKeys()
     } catch (err: any) {
-      setError(err?.response?.data?.detail || "Failed to revoke key")
+      if (err instanceof AxiosError && err.response?.data?.error?.message) {
+        setError(err.response.data.error.message)
+      } else {
+        setError(err?.response?.data?.detail || "Failed to revoke key")
+      }
     } finally {
       setActionLoading(null)
     }

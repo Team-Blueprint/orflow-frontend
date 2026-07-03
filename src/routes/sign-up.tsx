@@ -13,7 +13,7 @@ function SignUp() {
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      navigate({ to: "/dashboard/new" })
+      navigate({ to: "/dashboard" })
     }
   }, [isAuthenticated, isLoading, navigate])
 

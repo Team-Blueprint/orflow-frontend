@@ -88,8 +88,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
   const mainNav: NavItem[] = [
     { label: "Overview", to: projectBase, icon: ChartSquare },
-    { label: "Subscriptions", to: "#", icon: Refresh },
     { label: "Plans", to: "#", icon: Bill },
+    { label: "Subscriptions", to: "#", icon: Refresh },
     { label: "Customers", to: "#", icon: UsersGroupRounded },
     { label: "Webhooks", to: "#", icon: WebhookIcon },
   ];
