@@ -114,7 +114,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <div className="flex min-h-screen bg-canvas">
       {/* Mobile top bar */}
-      <div className="fixed inset-x-0 top-0 z-30 flex h-14 items-center gap-1 border-b border-hairline bg-paper px-2 md:hidden">
+      <div className="fixed inset-x-0 top-0 z-30 flex h-16 items-center gap-2 border-b border-hairline bg-paper px-4 md:hidden">
         <button
           type="button"
           onClick={() => setSidebarOpen(true)}
