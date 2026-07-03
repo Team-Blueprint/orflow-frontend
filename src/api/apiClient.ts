@@ -1,5 +1,11 @@
 import axios from "axios";
 
+declare module "axios" {
+  interface InternalAxiosRequestConfig {
+    _retry?: boolean;
+  }
+}
+
 const LS_API_KEY = "orflow_api_key";
 const LS_ACTIVE_PROJECT = "orflow_active_project_id";
 
