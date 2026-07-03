@@ -13,7 +13,7 @@ export default defineConfig({
     tailwindcss(),
   ],
   optimizeDeps: {
-    exclude: ["@solar-icons/react", "framer-motion"],
+    exclude: ["@solar-icons/react"],
   },
   resolve: {
     alias: {

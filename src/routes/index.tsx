@@ -4,14 +4,13 @@ import {
   Hero,
   PainPoints,
   CodeSnippet,
-  // ConsoleSplit,
   DesignedForDevs,
   Testimonial,
   Security,
   Integrations,
   CtaBanner,
   Faq,
-} from "@/components/sections";
+} from "@/components/landing";
 
 export const Route = createFileRoute("/")({
   component: Home,
