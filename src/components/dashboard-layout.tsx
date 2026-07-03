@@ -125,7 +125,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </svg>
         </button>
         <span className="text-sm font-bold tracking-tight text-white flex items-center gap-2">
-          <LogoIcon size={16} variant="white" />
+          <LogoIcon size={16} variant="orange" />
           Orflow
         </span>
       </div>
@@ -152,7 +152,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           onClick={closeSidebar}
           className="h-14 flex items-center gap-2 px-6 border-b border-hairline font-sans font-bold text-sm tracking-tight text-white cursor-pointer"
         >
-          <LogoIcon size={18} variant="white" />
+          <LogoIcon size={18} variant="orange" />
           Orflow
         </Link>
 
