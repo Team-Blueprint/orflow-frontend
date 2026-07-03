@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react"
-import { apiClient, setAccessToken } from "@/api/apiClient"
+import { apiClient, setAccessToken, LS_API_KEY } from "@/api/apiClient"
 
 interface Tenant {
   id: string
@@ -51,6 +51,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data } = await apiClient.post<{ tenant: Tenant; access_token: string }>("/v1/auth/signup", { name, email, password })
     setUser(data.tenant)
     setAccessToken(data.access_token)
+
+    // Auto-generate test API keys for the new user
+    try {
+      const keyRes = await apiClient.post("/v1/auth/keys/create", { key_type: "sk_test" })
+      localStorage.setItem(LS_API_KEY, keyRes.data.value)
+    } catch {
+      // Key generation failed - user can create manually later
+    }
   }, [])
 
   const logout = useCallback(async () => {

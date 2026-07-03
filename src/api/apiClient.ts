@@ -7,6 +7,7 @@ declare module "axios" {
 }
 
 const LS_API_KEY = "orflow_api_key";
+export { LS_API_KEY };
 const LS_ACTIVE_PROJECT = "orflow_active_project_id";
 const SS_ACCESS_TOKEN = "orflow_access_token";
 
@@ -26,7 +27,7 @@ export const apiClient = axios.create({
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
-    // Accept: "application/json",
+    Accept: "application/json",
   },
 });
 
