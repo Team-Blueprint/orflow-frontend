@@ -37,9 +37,9 @@ const IndexRoute = IndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardProjectIdRoute = DashboardProjectIdRouteImport.update({
-  id: '/$projectId',
-  path: '/$projectId',
-  getParentRoute: () => DashboardRoute,
+  id: '/dashboard/$projectId',
+  path: '/dashboard/$projectId',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardProjectIdSettingsRoute =
   DashboardProjectIdSettingsRouteImport.update({
@@ -105,6 +105,7 @@ export interface RootRouteChildren {
   NewRoute: typeof NewRoute
   SignInRoute: typeof SignInRoute
   SignUpRoute: typeof SignUpRoute
+  DashboardProjectIdRoute: typeof DashboardProjectIdRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -139,10 +140,10 @@ declare module '@tanstack/react-router' {
     }
     '/dashboard/$projectId': {
       id: '/dashboard/$projectId'
-      path: '/$projectId'
+      path: '/dashboard/$projectId'
       fullPath: '/dashboard/$projectId'
       preLoaderRoute: typeof DashboardProjectIdRouteImport
-      parentRoute: typeof DashboardRoute
+      parentRoute: typeof rootRouteImport
     }
     '/dashboard/$projectId/settings': {
       id: '/dashboard/$projectId/settings'
@@ -154,11 +155,23 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface DashboardProjectIdRouteChildren {
+  DashboardProjectIdSettingsRoute: typeof DashboardProjectIdSettingsRoute
+}
+
+const DashboardProjectIdRouteChildren: DashboardProjectIdRouteChildren = {
+  DashboardProjectIdSettingsRoute: DashboardProjectIdSettingsRoute,
+}
+
+const DashboardProjectIdRouteWithChildren =
+  DashboardProjectIdRoute._addFileChildren(DashboardProjectIdRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   NewRoute: NewRoute,
   SignInRoute: SignInRoute,
   SignUpRoute: SignUpRoute,
+  DashboardProjectIdRoute: DashboardProjectIdRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
