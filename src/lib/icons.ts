@@ -30,5 +30,6 @@ export { default as ShieldCheck } from "@solar-icons/react/icons/security/Shield
 export { default as Shop } from "@solar-icons/react/icons/shopping/Shop"
 export { default as Shuffle } from "@solar-icons/react/icons/video/Shuffle"
 export { default as UsersGroupRounded } from "@solar-icons/react/icons/users/UsersGroupRounded"
+export { default as ChartSquare } from "@solar-icons/react/icons/business/ChartSquare"
 export { default as Widget3 } from "@solar-icons/react/icons/settings/Widget3"
 export { default as Settings } from "@solar-icons/react/icons/settings/Settings"
