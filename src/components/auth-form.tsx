@@ -1,6 +1,8 @@
 import { type FormEvent, useState } from "react"
 import { Link, useNavigate } from "@tanstack/react-router"
 import { GithubIcon, LogoIcon } from "@/components/icons"
+import { useAuth } from "@/lib/auth"
+import { AxiosError } from "axios"
 
 interface AuthFormProps {
   mode: "sign-in" | "sign-up"
@@ -8,14 +10,36 @@ interface AuthFormProps {
 
 export function AuthForm({ mode }: AuthFormProps) {
   const navigate = useNavigate()
+  const { login, signup } = useAuth()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [name, setName] = useState("")
+  const [error, setError] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const isSignIn = mode === "sign-in"
 
-  function handleSubmit(e: FormEvent) {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault()
-    navigate({ to: isSignIn ? "/" : "/new" })
+    setError("")
+    setIsSubmitting(true)
+    try {
+      if (isSignIn) {
+        await login(email, password)
+      } else {
+        await signup(name, email, password)
+        navigate({ to: "/dashboard/new" })
+      }
+    } catch (err) {
+      if (err instanceof AxiosError && err.response?.data?.error?.message) {
+        setError(err.response.data.error.message)
+      } else if (err instanceof AxiosError && err.response?.data?.detail) {
+        setError(err.response.data.detail)
+      } else {
+        setError("Something went wrong. Please try again.")
+      }
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -109,11 +133,18 @@ export function AuthForm({ mode }: AuthFormProps) {
               </p>
             )}
 
+            {error && (
+              <p className="text-xs text-red-400 bg-red-950/30 border border-red-900/50 px-3 py-2">
+                {error}
+              </p>
+            )}
+
             <button
               type="submit"
-              className="btn-primary w-full text-sm font-bold py-3 mt-1 cursor-pointer"
+              disabled={isSubmitting}
+              className="btn-primary w-full text-sm font-bold py-3 mt-1 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSignIn ? "Sign in" : "Create account"}
+              {isSubmitting ? (isSignIn ? "Signing in..." : "Creating account...") : (isSignIn ? "Sign in" : "Create account")}
             </button>
           </form>
 
