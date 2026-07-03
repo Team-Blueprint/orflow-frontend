@@ -4,6 +4,7 @@ export const ENDPOINTS = {
     SIGNUP: "/v1/auth/signup",
     SIGNIN: "/v1/auth/signin",
     REFRESH: "/v1/auth/refresh",
+    LOGOUT: "/v1/auth/logout",
     ME: "/v1/auth/me",
     KEYS: {
       GET: "/v1/auth/keys/new",
@@ -58,6 +59,13 @@ export const ENDPOINTS = {
         CATALOG: "/v1/webhooks/events/catalog",
       },
     },
+  },
+  PROJECTS: {
+    CREATE: "/v1/projects/create",
+    LIST: "/v1/projects/list",
+    GET: (projectId: string) => `/v1/projects/${projectId}`,
+    UPDATE: (projectId: string) => `/v1/projects/${projectId}/update`,
+    DELETE: (projectId: string) => `/v1/projects/${projectId}/del`,
   },
   RECONCILIATION: {
     DISCREPANCIES: {
