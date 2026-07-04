@@ -2,11 +2,11 @@
   "rewrites": [
     {
       "source": "/docs",
-      "destination": "https://orflow.mintlify.site/docs"
+      "destination": "https://orflow.mintlify.site/"
     },
     {
       "source": "/docs/:match*",
-      "destination": "https://orflow.mintlify.site/docs/:match*"
+      "destination": "https://orflow.mintlify.site/:match*"
     },
     {
       "source": "/api-reference",
@@ -19,6 +19,10 @@
     {
       "source": "/mintlify-assets/:match*",
       "destination": "https://orflow.mintlify.site/mintlify-assets/:match*"
+    },
+    {
+      "source": "/_mintlify/:match*",
+      "destination": "https://orflow.mintlify.site/_mintlify/:match*"
     },
     {
       "source": "/(.*)",
