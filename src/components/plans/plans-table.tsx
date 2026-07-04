@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react"
+import { Link, useNavigate } from "@tanstack/react-router"
 import { useDebounce } from "@/hooks/use-debounce"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -24,13 +25,14 @@ interface Plan {
 
 interface PlansTableProps {
   plans: Plan[]
+  projectId: string
 }
 
 const INTERVAL_FILTERS = [
   "All", "Daily", "Weekly", "Monthly", "Quarterly", "Yearly",
 ] as const
 
-export function PlansTable({ plans }: PlansTableProps) {
+export function PlansTable({ plans, projectId }: PlansTableProps) {
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [intervalFilter, setIntervalFilter] = useState("all")
@@ -53,22 +55,6 @@ export function PlansTable({ plans }: PlansTableProps) {
     })
   }, [plans, debouncedSearch, statusFilter, intervalFilter])
 
-  if (plans.length === 0) {
-    return (
-      <div className="mt-16 flex flex-col items-center justify-center text-center">
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-700">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-          <polyline points="14 2 14 8 20 8" />
-          <line x1="16" y1="13" x2="8" y2="13" />
-          <line x1="16" y1="17" x2="8" y2="17" />
-        </svg>
-        <p className="mt-4 text-sm text-ink-soft max-w-xs leading-relaxed">
-          No plans yet. Create your first pricing tier.
-        </p>
-      </div>
-    )
-  }
-
   if (filtered.length === 0) {
     return (
       <>
@@ -85,10 +71,17 @@ export function PlansTable({ plans }: PlansTableProps) {
       <Filters {...{ search, setSearch, statusFilter, setStatusFilter, intervalFilter, setIntervalFilter }} />
 
       {/* Desktop table */}
-      <div className="hidden lg:block mt-4">
+      <div className="hidden lg:block mt-4 border border-hairline bg-paper overflow-x-auto">
         <table className="w-full border-collapse">
+          <colgroup>
+            <col className="w-[30%]" />
+            <col className="w-[22%]" />
+            <col className="w-[16%]" />
+            <col className="w-[14%]" />
+            <col className="w-[18%]" />
+          </colgroup>
           <thead>
-            <tr className="border-b border-hairline">
+            <tr className="border-b border-hairline bg-midnight-soft">
               <th className="text-left text-[10px] font-bold uppercase tracking-widest text-ink-soft px-4 py-3">Name</th>
               <th className="text-left text-[10px] font-bold uppercase tracking-widest text-ink-soft px-4 py-3">Amount</th>
               <th className="text-left text-[10px] font-bold uppercase tracking-widest text-ink-soft px-4 py-3">Interval</th>
@@ -98,29 +91,7 @@ export function PlansTable({ plans }: PlansTableProps) {
           </thead>
           <tbody>
             {filtered.map((plan) => (
-              <tr key={plan.id} className="border-b border-hairline hover:bg-paper/40 transition-colors">
-                <td className="px-4 py-3 text-sm font-bold text-ink">{plan.name}</td>
-                <td className="px-4 py-3 text-sm text-ink font-mono">
-                  ₦{Number(plan.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                </td>
-                <td className="px-4 py-3">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-ink-soft bg-paper border border-hairline px-2 py-0.5">
-                    {plan.interval}
-                  </span>
-                </td>
-                <td className="px-4 py-3">
-                  <Badge variant={plan.status === "active" ? "default" : "secondary"}>
-                    {plan.status}
-                  </Badge>
-                </td>
-                <td className="px-4 py-3 text-xs text-ink-soft font-mono">
-                  {new Date(plan.created_at).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
-                </td>
-              </tr>
+              <PlanRow key={plan.id} plan={plan} projectId={projectId} />
             ))}
           </tbody>
         </table>
@@ -129,7 +100,12 @@ export function PlansTable({ plans }: PlansTableProps) {
       {/* Mobile cards */}
       <div className="mt-4 flex flex-col gap-3 lg:hidden">
         {filtered.map((plan) => (
-          <div key={plan.id} className="border border-hairline bg-paper p-4">
+          <Link
+            key={plan.id}
+            to="/dashboard/$projectId/plans/$planId"
+            params={{ projectId, planId: plan.id }}
+            className="block border border-hairline bg-paper p-4 hover:bg-paper/40 transition-colors cursor-pointer"
+          >
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-sm font-bold text-ink">{plan.name}</p>
@@ -153,10 +129,46 @@ export function PlansTable({ plans }: PlansTableProps) {
                 })}
               </span>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </div>
+  )
+}
+
+function PlanRow({ plan, projectId }: { plan: Plan; projectId: string }) {
+  const navigate = useNavigate()
+  return (
+    <tr
+      onClick={() => navigate({ to: "/dashboard/$projectId/plans/$planId", params: { projectId, planId: plan.id } })}
+      onKeyDown={(e) => { if (e.key === "Enter") navigate({ to: "/dashboard/$projectId/plans/$planId", params: { projectId, planId: plan.id } }) }}
+      tabIndex={0}
+      className="border-b border-hairline last:border-0 hover:bg-midnight-soft/30 transition-colors cursor-pointer"
+    >
+      <td className="px-4 py-3">
+        <div className="text-sm font-bold text-ink">{plan.name}</div>
+      </td>
+      <td className="px-4 py-3 text-sm text-ink font-mono">
+        ₦{Number(plan.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+      </td>
+      <td className="px-4 py-3">
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-ink-soft bg-paper border border-hairline px-2 py-0.5">
+          {plan.interval}
+        </span>
+      </td>
+      <td className="px-4 py-3">
+        <Badge variant={plan.status === "active" ? "default" : "secondary"}>
+          {plan.status}
+        </Badge>
+      </td>
+      <td className="px-4 py-3 text-xs text-ink-soft font-mono">
+        {new Date(plan.created_at).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        })}
+      </td>
+    </tr>
   )
 }
 

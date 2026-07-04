@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react"
+import { useState, useRef, useEffect, type FormEvent } from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { AxiosError } from "axios"
 import {
@@ -19,15 +19,46 @@ import { apiClient } from "@/api/apiClient"
 import { ENDPOINTS } from "@/api/ENDPOINTS"
 
 function InfoTooltip({ text }: { text: string }) {
+  const [isOpen, setIsOpen] = useState(false)
+  const tooltipRef = useRef<HTMLSpanElement>(null)
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (tooltipRef.current && !tooltipRef.current.contains(e.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
+
   return (
-    <span className="relative group inline-flex items-center">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-500 cursor-help">
+    <span ref={tooltipRef} className="relative group inline-flex items-center">
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="text-zinc-500 cursor-help"
+        onClick={(e) => {
+          e.stopPropagation()
+          setIsOpen(!isOpen)
+        }}
+        onMouseEnter={() => setIsOpen(true)}
+        onMouseLeave={() => setIsOpen(false)}
+      >
         <circle cx="12" cy="12" r="10" />
         <path d="M12 16v-4" />
         <path d="M12 8h.01" />
       </svg>
-      <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-50 pointer-events-none">
-        <span className="bg-zinc-800 text-zinc-200 text-[11px] leading-relaxed px-3 py-2 border border-zinc-700 max-w-56 block text-center whitespace-normal">
+      <span className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 transition-opacity duration-150 ${
+        isOpen ? "opacity-100 visible" : "opacity-0 invisible"
+      } pointer-events-auto`}>
+        <span className="bg-zinc-800 text-zinc-200 text-[11px] leading-relaxed px-4 py-3 border border-zinc-700 max-w-96 block text-center whitespace-normal shadow-lg">
           {text}
         </span>
       </span>
