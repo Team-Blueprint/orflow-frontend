@@ -19,7 +19,7 @@ export function Nav() {
 
         <div className="hidden md:flex items-center gap-8 text-xs font-medium tracking-wide text-ink-soft">
           <a
-            href="#docs"
+            href="/docs"
             className="transition-colors hover:text-white cursor-pointer"
           >
             Docs
@@ -87,7 +87,7 @@ export function Nav() {
         <div className="border border-hairline px-6 py-4 md:hidden bg-zinc-950 mt-1">
           <div className="flex flex-col gap-4">
             <a
-              href="#docs"
+              href="/docs"
               className="text-xs font-medium text-ink-soft transition-colors hover:text-white cursor-pointer"
               onClick={() => setOpen(false)}
             >

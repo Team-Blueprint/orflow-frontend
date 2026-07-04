@@ -9,12 +9,12 @@
       "destination": "https://orflow.mintlify.site/:match*"
     },
     {
-      "source": "/api-reference",
-      "destination": "https://orflow.mintlify.site/api-reference"
+      "source": "/(api-reference|quickstart|core-concepts|guides|environment-setup)/:match*",
+      "destination": "https://orflow.mintlify.site/$1/:match*"
     },
     {
-      "source": "/api-reference/:match*",
-      "destination": "https://orflow.mintlify.site/api-reference/:match*"
+      "source": "/(api-reference|quickstart|core-concepts|guides|environment-setup)",
+      "destination": "https://orflow.mintlify.site/$1"
     },
     {
       "source": "/mintlify-assets/:match*",
