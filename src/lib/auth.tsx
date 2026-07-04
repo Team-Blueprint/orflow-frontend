@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react"
+import axios from "axios"
 import { apiClient, setAccessToken, LS_API_KEY } from "@/api/apiClient"
 
 interface Tenant {
@@ -29,9 +30,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const { data } = await apiClient.get<Tenant>("/v1/auth/me")
       setUser(data)
-    } catch {
-      setUser(null)
-      setAccessToken(null)
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        setUser(null)
+        setAccessToken(null)
+      }
     } finally {
       setIsLoading(false)
     }

@@ -80,7 +80,7 @@ apiClient.interceptors.response.use(
     }
 
     const url = originalRequest.url ?? "";
-    if (url === "/v1/auth/me" || url === "/v1/auth/refresh") {
+    if (url === "/v1/auth/refresh") {
       return Promise.reject(error);
     }
 
@@ -95,12 +95,19 @@ apiClient.interceptors.response.use(
 
     try {
       await apiClient.post("/v1/auth/refresh");
+      setAccessToken(null);
       isRefreshing = false;
       onRefreshed("");
       return apiClient(originalRequest);
-    } catch {
+    } catch (refreshError) {
       isRefreshing = false;
       refreshSubscribers = [];
+      if (axios.isAxiosError(refreshError) && refreshError.response?.status === 401) {
+        setAccessToken(null);
+        if (typeof window !== "undefined") {
+          window.location.href = "/sign-in";
+        }
+      }
       return Promise.reject(error);
     }
   },
