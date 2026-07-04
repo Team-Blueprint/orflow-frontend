@@ -24,13 +24,13 @@ function NotFound({ message }: NotFoundProps) {
         >
           Back to dashboard
         </Link>
-        <Link
-          to="/docs"
+        <a
+          href="/docs"
           className="inline-flex items-center gap-1.5 text-sm text-zinc-400 hover:text-zinc-200 transition-colors cursor-pointer"
         >
           View documentation
           <AltArrowRight size={16} />
-        </Link>
+        </a>
       </div>
     </div>
   )

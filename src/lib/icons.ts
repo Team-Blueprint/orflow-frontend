@@ -1,4 +1,5 @@
 export { default as AltArrowDown } from "@solar-icons/react/icons/arrows/AltArrowDown"
+export { default as AltArrowRight } from "@solar-icons/react/icons/arrows/AltArrowRight"
 export { default as AltArrowUp } from "@solar-icons/react/icons/arrows/AltArrowUp"
 export { default as Bill } from "@solar-icons/react/icons/money/Bill"
 export { default as Book } from "@solar-icons/react/icons/school/Book"
