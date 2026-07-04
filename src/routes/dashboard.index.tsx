@@ -2,6 +2,8 @@ import { useEffect, useState } from "react"
 import { createFileRoute, Link } from "@tanstack/react-router"
 import { AccountLayout } from "@/components/account-layout"
 import { ProjectCard } from "@/components/project-card"
+import { ProjectGridSkeleton } from "@/components/skeletons/project-grid-skeleton"
+import { ApiKeysSkeleton } from "@/components/skeletons/api-keys-skeleton"
 import { apiClient } from "@/api/apiClient"
 import { AxiosError } from "axios"
 
@@ -140,12 +142,12 @@ function DashboardHome() {
 
   return (
     <AccountLayout breadcrumb="Dashboard">
-      <div className="mx-auto max-w-5xl px-4 py-12 md:py-16">
+      <div className="mx-auto max-w-5xl p-4 sm:px-8 sm:pt-4 sm:pb-8">
         {/* Projects section */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-5 sm:mb-6">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-ink">Projects</h1>
-            <p className="mt-1 text-sm text-ink-soft">
+            <h1 className="text-2xl sm:text-3xl font-bold text-ink tracking-tight">Projects</h1>
+            <p className="text-xs sm:text-sm text-ink-soft mt-1 sm:mt-1.5">
               Select a project to manage subscriptions, plans, and webhooks
             </p>
           </div>
@@ -157,11 +159,7 @@ function DashboardHome() {
           </Link>
         </div>
 
-        {loading && (
-          <div className="mt-16 flex justify-center">
-            <div className="h-5 w-5 animate-spin rounded-full border border-hairline-strong border-t-transparent" />
-          </div>
-        )}
+        {loading && <ProjectGridSkeleton />}
 
         {error && (
           <p className="mt-6 text-xs text-red-400 bg-red-950/30 border border-red-900/50 px-3 py-2">{error}</p>
@@ -225,9 +223,7 @@ function DashboardHome() {
           )}
 
           {keysLoading ? (
-            <div className="mt-8 flex justify-center">
-              <div className="h-5 w-5 animate-spin rounded-full border border-hairline-strong border-t-transparent" />
-            </div>
+            <ApiKeysSkeleton />
           ) : (
             <div className="mt-6 flex flex-col gap-3">
               {tabKeys.map((keyType) => {

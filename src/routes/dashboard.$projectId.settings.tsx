@@ -87,13 +87,15 @@ function ProjectSettings() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-12 md:py-16">
-          <h1 className="text-2xl font-bold tracking-tight text-ink">Project Settings</h1>
-          <p className="mt-1 text-sm text-ink-soft">
-            Manage &ldquo;{originalName}&rdquo;
-          </p>
+    <div className="mx-auto max-w-3xl p-4 sm:px-8 sm:pt-4 sm:pb-8">
+          <div className="mb-5 sm:mb-6">
+            <h1 className="text-2xl sm:text-3xl font-bold text-ink tracking-tight">Project Settings</h1>
+            <p className="text-xs sm:text-sm text-ink-soft mt-1 sm:mt-1.5">
+              Manage &ldquo;{originalName}&rdquo;
+            </p>
+          </div>
 
-          <form onSubmit={handleSave} className="mt-10 flex flex-col gap-4 max-w-lg">
+          <form onSubmit={handleSave} className="flex flex-col gap-4 max-w-lg">
             <div className="flex flex-col gap-1.5">
               <label htmlFor="name" className="text-xs font-bold uppercase tracking-wider text-ink-soft">
                 Project name

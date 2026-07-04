@@ -129,18 +129,20 @@ function AccountSettings() {
 
   return (
     <AccountLayout breadcrumb="Settings">
-      <div className="mx-auto max-w-3xl px-4 py-16">
-        <h1 className="text-2xl font-bold tracking-tight text-ink">Settings</h1>
-        <p className="mt-1 text-sm text-ink-soft">
-          Manage your API keys and account settings
-        </p>
+      <div className="mx-auto max-w-3xl p-4 sm:px-8 sm:pt-4 sm:pb-8">
+        <div className="mb-5 sm:mb-6">
+          <h1 className="text-2xl sm:text-3xl font-bold text-ink tracking-tight">Settings</h1>
+          <p className="text-xs sm:text-sm text-ink-soft mt-1 sm:mt-1.5">
+            Manage your API keys and account settings
+          </p>
+        </div>
 
         {error && (
-          <p className="mt-6 text-xs text-red-400 bg-red-950/30 border border-red-900/50 px-3 py-2">{error}</p>
+          <p className="text-xs text-red-400 bg-red-950/30 border border-red-900/50 px-3 py-2 mb-5 sm:mb-6">{error}</p>
         )}
 
         {/* Tab bar */}
-        <div className="mt-8 flex border-b border-hairline">
+        <div className="flex border-b border-hairline">
           <button
             type="button"
             onClick={() => setKeyTab("test")}

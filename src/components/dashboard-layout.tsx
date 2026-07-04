@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, type ReactNode, type ElementType } from "react";
-import { Link, useRouter, useNavigate, useParams } from "@tanstack/react-router";
+import { Link, useLocation, useNavigate, useParams } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
 import {
   ChartSquare,
@@ -10,7 +10,8 @@ import {
 } from "@/lib/icons";
 import { WebhookIcon, LogoIcon } from "@/components/icons";
 import { cn } from "@/lib/utils";
-import { apiClient, setActiveProjectId } from "@/api/apiClient";
+import { setActiveProjectId } from "@/api/apiClient";
+import { useProjects } from "@/api/hooks/useProjects";
 
 interface NavItem {
   label: string;
@@ -29,129 +30,139 @@ interface Project {
   created_at: string;
 }
 
+const mainNav: NavItem[] = [
+  { label: "Overview", to: "/dashboard/$projectId", icon: ChartSquare },
+  { label: "Plans", to: "/dashboard/$projectId/plans", icon: Bill },
+  { label: "Subscriptions", to: "#", icon: Refresh },
+  { label: "Customers", to: "#", icon: UsersGroupRounded },
+  { label: "Webhooks", to: "/dashboard/$projectId/webhooks", icon: WebhookIcon },
+];
+
+const bottomNav: NavItem[] = [
+  { label: "Settings", to: "/dashboard/$projectId/settings", icon: Settings },
+];
+
 export function DashboardLayout({ children }: DashboardLayoutProps) {
+  const { user, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [projectOpen, setProjectOpen] = useState(false);
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [projectName, setProjectName] = useState("");
-  const router = useRouter();
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [currentProject, setCurrentProject] = useState<Project | null>(null);
+  const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
-  const { projectId } = useParams({ from: "/dashboard/$projectId" });
+  const projectSelectorRef = useRef<HTMLDivElement>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+  const { projectId } = useParams({ strict: false });
 
-  const currentPath = router.state.location.pathname;
-  const currentProjectId = projectId;
-  const subView = currentPath.split("/").filter(Boolean).slice(2).join("/");
-
-  const projectBase = `/dashboard/${currentProjectId}`;
+  const { data: projects, isLoading: isProjectsLoading, error: projectsError } = useProjects();
 
   useEffect(() => {
-    apiClient.get<Project[]>("/v1/projects/list").then((res) => {
-      setProjects(res.data);
-      const found = res.data.find((p) => p.id === currentProjectId);
-      if (found) setProjectName(found.name);
-    }).catch(() => {});
-  }, [currentProjectId]);
+    if (projects?.length) {
+      if (projectId) {
+        const activeProject = projects.find(p => p.id === projectId);
+        if (activeProject) {
+          setCurrentProject(activeProject);
+          setActiveProjectId(projectId);
+        } else {
+          navigate({ to: `/dashboard/${projects[0].id}` as any });
+        }
+      } else {
+        navigate({ to: `/dashboard/${projects[0].id}` as any });
+      }
+    }
+  }, [projectId, projects, navigate]);
 
   function closeSidebar() {
     setSidebarOpen(false);
   }
 
   function selectProject(p: Project) {
-    setProjectOpen(false);
+    setCurrentProject(p);
     setActiveProjectId(p.id);
-    const target = subView ? `/dashboard/${p.id}/${subView}` : `/dashboard/${p.id}`;
-    navigate({ to: target });
+    setProjectOpen(false);
+    navigate({ to: `/dashboard/${p.id}` as any });
   }
 
-  const projectRef = useRef<HTMLDivElement>(null);
-  const userMenuRef = useRef<HTMLDivElement>(null);
-  const mobileUserMenuRef = useRef<HTMLDivElement>(null);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [mobileUserMenuOpen, setMobileUserMenuOpen] = useState(false);
-
   useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (projectRef.current && !projectRef.current.contains(e.target as Node)) {
+    function handleClickOutside(event: MouseEvent) {
+      if (projectSelectorRef.current && !projectSelectorRef.current.contains(event.target as Node)) {
         setProjectOpen(false);
-      }
-      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
-        setUserMenuOpen(false);
-      }
-      if (mobileUserMenuRef.current && !mobileUserMenuRef.current.contains(e.target as Node)) {
-        setMobileUserMenuOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const mainNav: NavItem[] = [
-    { label: "Overview", to: projectBase, icon: ChartSquare },
-    { label: "Plans", to: `${projectBase}/plans`, icon: Bill },
-    { label: "Subscriptions", to: "#", icon: Refresh },
-    { label: "Customers", to: "#", icon: UsersGroupRounded },
-    { label: "Webhooks", to: "#", icon: WebhookIcon },
-  ];
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
-  const bottomNav: NavItem[] = [
-    { label: "Settings", to: `${projectBase}/settings`, icon: Settings },
-  ];
+  const isActiveRoute = (path: string) => {
+    if (path === "#") return false;
+    const resolvedPath = path.replace("$projectId", currentProject?.id ?? "");
+    const baseProjectPath = `/dashboard/${currentProject?.id}`;
+    if (resolvedPath === baseProjectPath) {
+      return location.pathname === baseProjectPath || location.pathname === baseProjectPath + "/";
+    }
+    return location.pathname === resolvedPath || location.pathname.startsWith(resolvedPath + "/");
+  };
 
-  const navLinkClass = (to: string) =>
-    currentPath === to
-      ? "mx-3 px-3 py-2 bg-primary text-white font-sans text-sm font-semibold flex items-center gap-3 cursor-pointer border border-orange-600"
-      : "mx-3 px-3 py-2 text-ink-soft hover:text-ink hover:bg-paper/40 font-sans text-sm font-medium flex items-center gap-3 transition-colors cursor-pointer";
-
-  const disabledClass =
-    "mx-3 px-3 py-2 text-ink-soft/40 font-sans text-sm font-medium flex items-center gap-3 cursor-not-allowed";
-
-  function handleExitToAccount() {
-    setActiveProjectId(null);
-    navigate({ to: "/dashboard" });
+  if (isProjectsLoading) {
+    return <div className="flex min-h-screen items-center justify-center bg-canvas text-ink">Loading projects...</div>;
   }
 
+  if (projectsError) {
+    return <div className="flex min-h-screen items-center justify-center bg-canvas text-ink">Error loading projects</div>;
+  }
+
+  if (!projects?.length) {
+    return <div className="flex min-h-screen items-center justify-center bg-canvas text-ink">No projects found</div>;
+  }
+
+  if (!currentProject) {
+    return <div className="flex min-h-screen items-center justify-center bg-canvas text-ink">Loading project...</div>;
+  }
+
+  const dynamicMainNav = mainNav.map(item => ({
+    ...item,
+    to: item.to.replace("$projectId", currentProject.id),
+  }));
+
   return (
-    <div className="flex min-h-screen bg-canvas">
-      {/* Mobile top bar */}
-      <div className="fixed inset-x-0 top-0 z-30 flex h-16 items-center gap-2 border-b border-hairline bg-paper px-4 md:hidden">
-        <button
-          type="button"
-          onClick={() => setSidebarOpen(true)}
-          className="cursor-pointer text-ink hover:text-primary transition-colors shrink-0"
-          style={{ minHeight: 44, minWidth: 44 }}
-          aria-label="Open sidebar"
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
-        <div className="flex items-center gap-1.5 text-xs font-mono text-ink-soft truncate min-w-0">
+    <div className="flex h-screen overflow-hidden bg-canvas">
+      <div className="fixed inset-x-0 top-0 z-30 flex h-14 items-center justify-between border-b border-hairline bg-paper px-4 md:hidden">
+        <div className="flex items-center gap-3">
           <button
             type="button"
-            onClick={handleExitToAccount}
-            className="text-zinc-500 hover:text-ink transition-colors cursor-pointer bg-transparent border-none p-0 flex items-center shrink-0"
+            onClick={() => setSidebarOpen(true)}
+            className="cursor-pointer text-ink hover:text-primary transition-colors"
+            style={{ minHeight: 44, minWidth: 44 }}
+            aria-label="Open sidebar"
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M19 12H5" />
-              <polyline points="12 19 5 12 12 5" />
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-          <span className="text-zinc-700 shrink-0">/</span>
-          <Link to="/dashboard" className="hover:text-ink transition-colors shrink-0">Dashboard</Link>
-          <span className="text-zinc-700 shrink-0">/</span>
-          <span className="text-ink font-semibold truncate min-w-0">{projectName || currentProjectId}</span>
+          <span className="text-base font-semibold tracking-tight text-ink">Orflow</span>
         </div>
-        <div className="flex-1 min-w-0" />
-        <div ref={mobileUserMenuRef} className="relative shrink-0">
+
+        <div ref={userMenuRef} className="relative">
           <button
             type="button"
-            onClick={() => setMobileUserMenuOpen((o) => !o)}
+            onClick={() => setUserMenuOpen((o) => !o)}
             className="w-7 h-7 bg-paper border border-hairline text-ink font-mono text-[10px] flex items-center justify-center cursor-pointer hover:border-hairline-strong transition-colors"
+            style={{ minHeight: 28, minWidth: 28 }}
           >
-            {user?.name ? user.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase() : "OR"}
+            {user?.name ? user.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase() : "OR"}
           </button>
-          {mobileUserMenuOpen && (
+
+          {userMenuOpen && (
             <div className="absolute right-0 top-full mt-1 w-56 border border-hairline bg-paper z-50">
               <div className="p-3 border-b border-hairline">
                 <p className="text-xs font-semibold text-ink">{user?.name || "Orflow User"}</p>
@@ -160,7 +171,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               <button
                 type="button"
                 onClick={async () => {
-                  setMobileUserMenuOpen(false);
+                  setUserMenuOpen(false);
                   await logout();
                   navigate({ to: "/sign-in" });
                 }}
@@ -173,64 +184,62 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </div>
       </div>
 
-      {/* Mobile backdrop */}
       {sidebarOpen && (
-        <div className="fixed inset-0 z-40 bg-black/60 md:hidden" onClick={closeSidebar} />
+        <div
+          className="fixed inset-0 z-40 bg-black/60 md:hidden"
+          onClick={closeSidebar}
+        />
       )}
 
-      {/* Sidebar */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-64 h-screen bg-canvas border-r border-hairline flex flex-col justify-between select-none transition-transform duration-200",
-          "md:translate-x-0 md:static md:z-auto",
+          "fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-hairline bg-paper transition-transform duration-200",
+          "md:translate-x-0",
           sidebarOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
-        {/* Logo */}
-        <Link
-          to={projectBase}
+        <a
+          href="/"
           onClick={closeSidebar}
-          className="h-14 flex items-center gap-2 px-6 border-b border-hairline font-sans font-bold text-sm tracking-tight text-white cursor-pointer"
+          className="flex items-center gap-2 px-5 py-4 cursor-pointer"
         >
-          <LogoIcon size={18} variant="orange" />
-          Orflow
-        </Link>
+          <LogoIcon size={20} variant="orange" />
+          <span className="text-base font-semibold tracking-tight text-ink">Orflow</span>
+        </a>
 
-        {/* Project selector */}
-        <div ref={projectRef} className="relative mx-4 my-4">
+        <div className="relative px-3 pb-4" ref={projectSelectorRef}>
           <button
             type="button"
             onClick={() => setProjectOpen((o) => !o)}
-            className="w-full bg-paper/60 border border-hairline px-3 py-2 text-xs font-mono text-ink flex items-center justify-between hover:border-hairline-strong transition-colors cursor-pointer"
+            className="flex w-full items-center justify-between border border-hairline bg-canvas px-3 py-2 text-sm text-ink transition-colors duration-150 hover:bg-midnight-soft cursor-pointer"
           >
-            <span className="truncate">{projectName || currentProjectId}</span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-zinc-500 shrink-0">
-              {projectOpen ? (
-                <path d="M18 15l-6-6-6 6" />
-              ) : (
-                <path d="M6 9l6 6 6-6" />
-              )}
+            <span className="truncate">{currentProject.name}</span>
+            <svg
+              width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+              className={cn("shrink-0 text-ink-soft transition-transform duration-150", projectOpen && "rotate-180")}
+            >
+              <path d="M6 9l6 6 6-6" />
             </svg>
           </button>
 
           {projectOpen && (
-            <div className="absolute left-0 right-0 top-full z-50 mt-1 border border-hairline bg-paper">
-              <div className="py-1 max-h-48 overflow-y-auto">
+            <div className="absolute left-3 right-3 top-full z-50 mt-1 border border-hairline bg-paper shadow-soft-lift">
+              <div className="py-1">
                 {projects.map((p) => (
                   <button
                     key={p.id}
                     type="button"
                     onClick={() => selectProject(p)}
                     className={cn(
-                      "flex w-full items-center justify-between px-3 py-2 text-xs font-mono transition-colors duration-150 cursor-pointer",
-                      p.id === currentProjectId
+                      "flex w-full items-center justify-between px-3 py-2 text-sm transition-colors duration-150 cursor-pointer",
+                      p.id === currentProject.id
                         ? "text-primary"
-                        : "text-ink-soft hover:text-ink hover:bg-paper/40",
+                        : "text-ink-soft hover:text-ink hover:bg-midnight-soft",
                     )}
                   >
                     <span>{p.name}</span>
-                    {p.id === currentProjectId && (
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    {p.id === currentProject.id && (
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                         <path d="M20 6L9 17l-5-5" />
                       </svg>
                     )}
@@ -241,7 +250,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 <Link
                   to="/dashboard/new"
                   onClick={() => { setProjectOpen(false); closeSidebar(); }}
-                  className="flex items-center px-3 py-2 text-xs font-mono text-ink-soft hover:text-ink hover:bg-paper/40 transition-colors cursor-pointer"
+                  className="flex items-center px-3 py-2 text-sm text-ink-soft hover:text-ink hover:bg-midnight-soft transition-colors duration-150 cursor-pointer"
                 >
                   + New project
                 </Link>
@@ -250,100 +259,102 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           )}
         </div>
 
-        {/* Nav heading */}
-        <p className="px-6 text-[10px] font-bold tracking-widest text-zinc-500 uppercase mb-2">Pages</p>
-
-        {/* Main nav */}
-        <nav className="flex-1 overflow-y-auto">
-          {mainNav.map((item) =>
-            item.to === "#" ? (
-              <div key={item.label} className={disabledClass}>
-                <item.icon size={16} />
+        <nav className="flex-1 overflow-y-auto px-3">
+          {dynamicMainNav.map((item) =>
+            item.to.startsWith("#") ? (
+              <button
+                key={item.label}
+                type="button"
+                className="flex w-full items-center gap-3 px-3 py-2 text-sm font-medium text-ink-soft cursor-not-allowed opacity-50"
+              >
+                <item.icon size={18} />
                 {item.label}
-              </div>
+              </button>
             ) : (
-              <Link key={item.label} to={item.to as any} onClick={closeSidebar} className={navLinkClass(item.to)}>
-                <item.icon size={16} />
+              <Link
+                key={item.label}
+                to={item.to as any}
+                onClick={closeSidebar}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2 text-sm font-medium transition-colors duration-150 cursor-pointer",
+                  isActiveRoute(item.to)
+                    ? "bg-primary/15 text-primary"
+                    : "text-ink-soft hover:text-ink hover:bg-primary/5",
+                )}
+              >
+                <item.icon size={18} />
                 {item.label}
               </Link>
             ),
           )}
         </nav>
 
-        {/* Bottom footer */}
-        <div className="pt-4 border-t border-hairline mb-4">
+        <div className="border-t border-hairline px-3 py-3">
           {bottomNav.map((item) => (
-            <Link key={item.label} to={item.to as any} onClick={closeSidebar} className={navLinkClass(item.to)}>
-              <item.icon size={16} />
+            <Link
+              key={item.label}
+              to={item.to as any}
+              onClick={closeSidebar}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2 text-sm font-medium transition-colors duration-150 cursor-pointer",
+                isActiveRoute(item.to)
+                  ? "bg-primary/15 text-primary"
+                  : "text-ink-soft hover:text-ink hover:bg-primary/5",
+              )}
+            >
+              <item.icon size={18} />
               {item.label}
             </Link>
           ))}
         </div>
       </aside>
 
-      {/* Main content */}
-      <main className="flex-1 flex flex-col">
-        {/* Header */}
-        <header className="h-14 w-full bg-canvas/80 backdrop-blur-md border-b border-hairline flex items-center justify-between px-8 z-30 hidden md:flex">
-          {/* Breadcrumbs */}
+      <div className="flex-1 flex flex-col min-w-0 md:ml-64 pt-14 md:pt-0">
+        <header className="h-14 w-full bg-canvas/80 backdrop-blur-md border-b border-hairline hidden md:flex items-center justify-between px-4 md:px-8 shrink-0">
           <div className="flex items-center gap-2 text-xs font-mono text-ink-soft">
-            <button
-              type="button"
-              onClick={handleExitToAccount}
-              className="text-zinc-500 hover:text-ink transition-colors cursor-pointer bg-transparent border-none p-0 flex items-center"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M19 12H5" />
-                <polyline points="12 19 5 12 12 5" />
-              </svg>
-            </button>
+            <Link to="/dashboard" className="hover:text-ink transition-colors cursor-pointer">Dashboard</Link>
             <span className="text-zinc-700">/</span>
-            <Link to="/dashboard" className="hover:text-ink transition-colors">Dashboard</Link>
-            <span className="text-zinc-700">/</span>
-            <span className="text-ink font-semibold">{projectName || currentProjectId}</span>
+            <Link to={`/dashboard/${currentProject.id}` as any} className="text-ink font-semibold hover:text-primary transition-colors cursor-pointer">
+              {currentProject.name}
+            </Link>
           </div>
 
-          {/* System actions */}
-          <div className="flex items-center gap-4">
-            <span className="flex items-center gap-1.5 text-[10px] font-mono font-semibold px-2 py-0.5 bg-emerald-950/40 text-emerald-400 border border-emerald-900/50">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-              API: OPERATIONAL
-            </span>
-            <div ref={userMenuRef} className="relative">
-              <button
-                type="button"
-                onClick={() => setUserMenuOpen((o) => !o)}
-                className="w-7 h-7 bg-paper border border-hairline text-ink font-mono text-[10px] flex items-center justify-center cursor-pointer hover:border-hairline-strong transition-colors"
-              >
-                {user?.name ? user.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase() : "OR"}
-              </button>
+          <div ref={userMenuRef} className="relative">
+            <button
+              type="button"
+              onClick={() => setUserMenuOpen((o) => !o)}
+              className="w-7 h-7 bg-paper border border-hairline text-ink font-mono text-[10px] flex items-center justify-center cursor-pointer hover:border-hairline-strong transition-colors"
+              style={{ minHeight: 28, minWidth: 28 }}
+            >
+              {user?.name ? user.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase() : "OR"}
+            </button>
 
-              {userMenuOpen && (
-                <div className="absolute right-0 top-full mt-1 w-56 border border-hairline bg-paper z-50">
-                  <div className="p-3 border-b border-hairline">
-                    <p className="text-xs font-semibold text-ink">{user?.name || "Orflow User"}</p>
-                    <p className="text-[11px] text-ink-soft mt-0.5">{user?.email || "user@orflow.io"}</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      setUserMenuOpen(false);
-                      await logout();
-                      navigate({ to: "/sign-in" });
-                    }}
-                    className="flex w-full items-center px-3 py-2 text-xs text-ink-soft hover:text-ink hover:bg-zinc-900/40 transition-colors cursor-pointer bg-transparent border-none text-left"
-                  >
-                    Log out
-                  </button>
+            {userMenuOpen && (
+              <div className="absolute right-0 top-full mt-1 w-56 border border-hairline bg-paper z-50">
+                <div className="p-3 border-b border-hairline">
+                  <p className="text-xs font-semibold text-ink">{user?.name || "Orflow User"}</p>
+                  <p className="text-[11px] text-ink-soft mt-0.5">{user?.email || "user@orflow.io"}</p>
                 </div>
-              )}
-            </div>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setUserMenuOpen(false);
+                    await logout();
+                    navigate({ to: "/sign-in" });
+                  }}
+                  className="flex w-full items-center px-3 py-2 text-xs text-ink-soft hover:text-ink hover:bg-zinc-900/40 transition-colors cursor-pointer bg-transparent border-none text-left"
+                >
+                  Log out
+                </button>
+              </div>
+            )}
           </div>
         </header>
 
-        {/* Page content */}
-        <div className="flex-1 pt-14 md:pt-0">{children}</div>
-      </main>
+        <main className="flex-1 overflow-y-auto">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }
