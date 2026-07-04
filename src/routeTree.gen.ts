@@ -20,7 +20,9 @@ import { Route as DashboardProjectIdRouteImport } from './routes/dashboard.$proj
 import { Route as DashboardProjectIdIndexRouteImport } from './routes/dashboard.$projectId.index'
 import { Route as DashboardProjectIdSettingsRouteImport } from './routes/dashboard.$projectId.settings'
 import { Route as DashboardProjectIdPlansRouteImport } from './routes/dashboard.$projectId.plans'
+import { Route as DashboardProjectIdWebhooksIndexRouteImport } from './routes/dashboard.$projectId/webhooks/index'
 import { Route as DashboardProjectIdPlansIndexRouteImport } from './routes/dashboard.$projectId.plans.index'
+import { Route as DashboardProjectIdPlansPlanIdRouteImport } from './routes/dashboard.$projectId.plans.$planId'
 
 const SignUpRoute = SignUpRouteImport.update({
   id: '/sign-up',
@@ -78,10 +80,22 @@ const DashboardProjectIdPlansRoute = DashboardProjectIdPlansRouteImport.update({
   path: '/plans',
   getParentRoute: () => DashboardProjectIdRoute,
 } as any)
+const DashboardProjectIdWebhooksIndexRoute =
+  DashboardProjectIdWebhooksIndexRouteImport.update({
+    id: '/webhooks/',
+    path: '/webhooks/',
+    getParentRoute: () => DashboardProjectIdRoute,
+  } as any)
 const DashboardProjectIdPlansIndexRoute =
   DashboardProjectIdPlansIndexRouteImport.update({
     id: '/',
     path: '/',
+    getParentRoute: () => DashboardProjectIdPlansRoute,
+  } as any)
+const DashboardProjectIdPlansPlanIdRoute =
+  DashboardProjectIdPlansPlanIdRouteImport.update({
+    id: '/$planId',
+    path: '/$planId',
     getParentRoute: () => DashboardProjectIdPlansRoute,
   } as any)
 
@@ -97,7 +111,9 @@ export interface FileRoutesByFullPath {
   '/dashboard/$projectId/plans': typeof DashboardProjectIdPlansRouteWithChildren
   '/dashboard/$projectId/settings': typeof DashboardProjectIdSettingsRoute
   '/dashboard/$projectId/': typeof DashboardProjectIdIndexRoute
+  '/dashboard/$projectId/plans/$planId': typeof DashboardProjectIdPlansPlanIdRoute
   '/dashboard/$projectId/plans/': typeof DashboardProjectIdPlansIndexRoute
+  '/dashboard/$projectId/webhooks/': typeof DashboardProjectIdWebhooksIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -108,7 +124,9 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardIndexRoute
   '/dashboard/$projectId/settings': typeof DashboardProjectIdSettingsRoute
   '/dashboard/$projectId': typeof DashboardProjectIdIndexRoute
+  '/dashboard/$projectId/plans/$planId': typeof DashboardProjectIdPlansPlanIdRoute
   '/dashboard/$projectId/plans': typeof DashboardProjectIdPlansIndexRoute
+  '/dashboard/$projectId/webhooks': typeof DashboardProjectIdWebhooksIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -123,7 +141,9 @@ export interface FileRoutesById {
   '/dashboard/$projectId/plans': typeof DashboardProjectIdPlansRouteWithChildren
   '/dashboard/$projectId/settings': typeof DashboardProjectIdSettingsRoute
   '/dashboard/$projectId/': typeof DashboardProjectIdIndexRoute
+  '/dashboard/$projectId/plans/$planId': typeof DashboardProjectIdPlansPlanIdRoute
   '/dashboard/$projectId/plans/': typeof DashboardProjectIdPlansIndexRoute
+  '/dashboard/$projectId/webhooks/': typeof DashboardProjectIdWebhooksIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -139,7 +159,9 @@ export interface FileRouteTypes {
     | '/dashboard/$projectId/plans'
     | '/dashboard/$projectId/settings'
     | '/dashboard/$projectId/'
+    | '/dashboard/$projectId/plans/$planId'
     | '/dashboard/$projectId/plans/'
+    | '/dashboard/$projectId/webhooks/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -150,7 +172,9 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/dashboard/$projectId/settings'
     | '/dashboard/$projectId'
+    | '/dashboard/$projectId/plans/$planId'
     | '/dashboard/$projectId/plans'
+    | '/dashboard/$projectId/webhooks'
   id:
     | '__root__'
     | '/'
@@ -164,7 +188,9 @@ export interface FileRouteTypes {
     | '/dashboard/$projectId/plans'
     | '/dashboard/$projectId/settings'
     | '/dashboard/$projectId/'
+    | '/dashboard/$projectId/plans/$planId'
     | '/dashboard/$projectId/plans/'
+    | '/dashboard/$projectId/webhooks/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -253,6 +279,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardProjectIdPlansRouteImport
       parentRoute: typeof DashboardProjectIdRoute
     }
+    '/dashboard/$projectId/webhooks/': {
+      id: '/dashboard/$projectId/webhooks/'
+      path: '/webhooks'
+      fullPath: '/dashboard/$projectId/webhooks/'
+      preLoaderRoute: typeof DashboardProjectIdWebhooksIndexRouteImport
+      parentRoute: typeof DashboardProjectIdRoute
+    }
     '/dashboard/$projectId/plans/': {
       id: '/dashboard/$projectId/plans/'
       path: '/'
@@ -260,15 +293,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardProjectIdPlansIndexRouteImport
       parentRoute: typeof DashboardProjectIdPlansRoute
     }
+    '/dashboard/$projectId/plans/$planId': {
+      id: '/dashboard/$projectId/plans/$planId'
+      path: '/$planId'
+      fullPath: '/dashboard/$projectId/plans/$planId'
+      preLoaderRoute: typeof DashboardProjectIdPlansPlanIdRouteImport
+      parentRoute: typeof DashboardProjectIdPlansRoute
+    }
   }
 }
 
 interface DashboardProjectIdPlansRouteChildren {
+  DashboardProjectIdPlansPlanIdRoute: typeof DashboardProjectIdPlansPlanIdRoute
   DashboardProjectIdPlansIndexRoute: typeof DashboardProjectIdPlansIndexRoute
 }
 
 const DashboardProjectIdPlansRouteChildren: DashboardProjectIdPlansRouteChildren =
   {
+    DashboardProjectIdPlansPlanIdRoute: DashboardProjectIdPlansPlanIdRoute,
     DashboardProjectIdPlansIndexRoute: DashboardProjectIdPlansIndexRoute,
   }
 
@@ -281,12 +323,14 @@ interface DashboardProjectIdRouteChildren {
   DashboardProjectIdPlansRoute: typeof DashboardProjectIdPlansRouteWithChildren
   DashboardProjectIdSettingsRoute: typeof DashboardProjectIdSettingsRoute
   DashboardProjectIdIndexRoute: typeof DashboardProjectIdIndexRoute
+  DashboardProjectIdWebhooksIndexRoute: typeof DashboardProjectIdWebhooksIndexRoute
 }
 
 const DashboardProjectIdRouteChildren: DashboardProjectIdRouteChildren = {
   DashboardProjectIdPlansRoute: DashboardProjectIdPlansRouteWithChildren,
   DashboardProjectIdSettingsRoute: DashboardProjectIdSettingsRoute,
   DashboardProjectIdIndexRoute: DashboardProjectIdIndexRoute,
+  DashboardProjectIdWebhooksIndexRoute: DashboardProjectIdWebhooksIndexRoute,
 }
 
 const DashboardProjectIdRouteWithChildren =
