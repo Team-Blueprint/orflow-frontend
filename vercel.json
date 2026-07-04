@@ -17,6 +17,10 @@
       "destination": "https://orflow.mintlify.site/api-reference/:match*"
     },
     {
+      "source": "/mintlify-assets/:match*",
+      "destination": "https://orflow.mintlify.site/mintlify-assets/:match*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
