@@ -118,7 +118,7 @@ export function CodeSnippet() {
             </p>
             <motion.a
               {...bScale}
-              href="#"
+              href="/api-reference"
               className="inline-flex items-center text-sm text-orange-500 font-semibold hover:text-orange-600 transition-colors cursor-pointer"
             >
               View API reference →

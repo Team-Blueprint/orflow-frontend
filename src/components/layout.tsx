@@ -30,6 +30,12 @@ export function Nav() {
           >
             Developers
           </a>
+          <a
+            href="#faq"
+            className="transition-colors hover:text-white cursor-pointer"
+          >
+            FAQ
+          </a>
         </div>
 
         <div className="hidden md:flex items-center gap-4">
@@ -94,6 +100,13 @@ export function Nav() {
             >
               Developers
             </a>
+            <a
+              href="#faq"
+              className="text-xs font-medium text-ink-soft transition-colors hover:text-white cursor-pointer"
+              onClick={() => setOpen(false)}
+            >
+              FAQ
+            </a>
             <hr className="border-hairline" />
             <Link
               to="/sign-in"
@@ -129,9 +142,8 @@ export function Nav() {
 const footerColumns = {
   Product: [
     { label: "Documentation", href: "/docs" },
-    { label: "API Reference", href: "#" },
+    { label: "API Reference", href: "/api-reference" },
     { label: "Pricing", href: "#pricing" },
-    { label: "Changelog", href: "#" },
   ],
   Developers: [
     {
@@ -139,13 +151,10 @@ const footerColumns = {
       href: "https://github.com/Team-Blueprint/orflow-backend",
     },
     { label: "API Docs", href: "/docs" },
-    { label: "Status", href: "#" },
-    { label: "Open Source", href: "#" },
+    { label: "Open Source", href: "https://github.com/Team-Blueprint/orflow-backend" },
   ],
   Company: [
-    { label: "Team Blueprint", href: "#" },
-    { label: "Blog", href: "#" },
-    { label: "Careers", href: "#" },
+    { label: "Team Blueprint", href: "https://github.com/Team-Blueprint" },
   ],
   Legal: [
     { label: "Privacy Policy", href: "#" },
