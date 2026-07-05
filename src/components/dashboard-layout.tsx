@@ -34,7 +34,7 @@ const mainNav: NavItem[] = [
   { label: "Overview", to: "/dashboard/$projectId", icon: ChartSquare },
   { label: "Plans", to: "/dashboard/$projectId/plans", icon: Bill },
   { label: "Subscriptions", to: "/dashboard/$projectId/subscriptions", icon: Refresh },
-  { label: "Customers", to: "#", icon: UsersGroupRounded },
+  { label: "Customers", to: "/dashboard/$projectId/customers", icon: UsersGroupRounded },
   { label: "Webhooks", to: "/dashboard/$projectId/webhooks", icon: WebhookIcon },
 ];
 
