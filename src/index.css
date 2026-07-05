@@ -5,6 +5,7 @@
 @import "@fontsource/instrument-serif";
 
 @custom-variant dark (&:is(.dark *));
+@custom-variant light (&:is(.light *));
 
 :root {
   --ink: #fafafa;
@@ -201,4 +202,48 @@ code, pre, .font-mono {
 
 .btn-primary:hover::before {
   left: 150%;
+}
+
+.light {
+  --ink: #1c1917;
+  --ink-soft: #78716c;
+  --on-ink: #ffffff;
+  --on-ink-soft: #a1a1aa;
+  --midnight: #f5f5f4;
+  --midnight-soft: #e7e5e4;
+  --canvas: #fafaf9;
+  --paper: #ffffff;
+  --primary: #f59e0b;
+  --primary-hover: #d97706;
+  --primary-soft: #fef3c7;
+  --hairline: #e7e5e4;
+  --hairline-strong: #d6d3d1;
+
+  --background: var(--canvas);
+  --foreground: var(--ink);
+  --card: var(--paper);
+  --card-foreground: var(--ink);
+  --popover: var(--paper);
+  --popover-foreground: var(--ink);
+  --primary-foreground: var(--on-ink);
+  --secondary: var(--midnight-soft);
+  --secondary-foreground: var(--ink);
+  --muted: var(--hairline);
+  --muted-foreground: var(--ink-soft);
+  --accent: var(--primary-soft);
+  --accent-foreground: var(--ink);
+  --destructive: #dc2626;
+  --border: var(--hairline);
+  --input: var(--hairline);
+  --ring: var(--primary);
+  --radius: 0.5rem;
+
+  --sidebar: var(--paper);
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--on-ink);
+  --sidebar-accent: var(--primary-soft);
+  --sidebar-accent-foreground: var(--ink);
+  --sidebar-border: var(--hairline);
+  --sidebar-ring: var(--primary);
 }
