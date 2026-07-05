@@ -20,6 +20,8 @@ interface Plan {
   interval_count: number
   trial_period_days: number | null
   installments_count: number | null
+  subscription_count: number
+  total_revenue: number
   status: "active" | "archived"
   created_at: string
 }
@@ -75,16 +77,20 @@ export function PlansTable({ plans, projectId }: PlansTableProps) {
       <div className="hidden lg:block mt-4 border border-hairline bg-paper overflow-x-auto">
         <table className="w-full border-collapse">
           <colgroup>
-            <col className="w-[30%]" />
-            <col className="w-[22%]" />
+            <col className="w-[25%]" />
             <col className="w-[16%]" />
+            <col className="w-[10%]" />
+            <col className="w-[16%]" />
+            <col className="w-[10%]" />
+            <col className="w-[9%]" />
             <col className="w-[14%]" />
-            <col className="w-[18%]" />
           </colgroup>
           <thead>
             <tr className="border-b border-hairline bg-midnight-soft">
               <th className="text-left text-[10px] font-bold uppercase tracking-widest text-ink-soft px-4 py-3">Name</th>
               <th className="text-left text-[10px] font-bold uppercase tracking-widest text-ink-soft px-4 py-3">Amount</th>
+              <th className="text-left text-[10px] font-bold uppercase tracking-widest text-ink-soft px-4 py-3">Subs</th>
+              <th className="text-left text-[10px] font-bold uppercase tracking-widest text-ink-soft px-4 py-3">Revenue</th>
               <th className="text-left text-[10px] font-bold uppercase tracking-widest text-ink-soft px-4 py-3">Interval</th>
               <th className="text-left text-[10px] font-bold uppercase tracking-widest text-ink-soft px-4 py-3">Status</th>
               <th className="text-left text-[10px] font-bold uppercase tracking-widest text-ink-soft px-4 py-3">Created</th>
@@ -118,7 +124,11 @@ export function PlansTable({ plans, projectId }: PlansTableProps) {
                 {plan.status}
               </Badge>
             </div>
-            <div className="mt-3 flex items-center gap-3 text-[10px] text-ink-soft">
+            <div className="mt-2 flex items-center gap-3 text-[10px] text-ink-soft">
+              <span className="font-mono">{plan.subscription_count} subs</span>
+              <span className="font-mono">{formatNaira(plan.total_revenue)}</span>
+            </div>
+            <div className="mt-1 flex items-center gap-3 text-[10px] text-ink-soft">
               <span className="font-semibold uppercase tracking-wider bg-paper border border-hairline px-2 py-0.5">
                 {plan.interval}
               </span>
@@ -151,6 +161,12 @@ function PlanRow({ plan, projectId }: { plan: Plan; projectId: string }) {
       </td>
       <td className="px-4 py-3 text-sm text-ink font-mono">
         {formatNaira(plan.amount)}
+      </td>
+      <td className="px-4 py-3 text-xs text-ink-soft font-mono">
+        {plan.subscription_count}
+      </td>
+      <td className="px-4 py-3 text-xs text-ink-soft font-mono">
+        {formatNaira(plan.total_revenue)}
       </td>
       <td className="px-4 py-3">
         <span className="text-[10px] font-semibold uppercase tracking-wider text-ink-soft bg-paper border border-hairline px-2 py-0.5">

@@ -72,6 +72,12 @@ export const ENDPOINTS = {
   ANALYTICS: {
     GET: (projectId: string) => `/v1/projects/${projectId}/analytics`,
   },
+  PAYMENT_LINKS: {
+    CREATE: "/v1/payment-links/create",
+    LIST: "/v1/payment-links/list",
+    GET: (linkId: string) => `/v1/payment-links/${linkId}`,
+    DELETE: (linkId: string) => `/v1/payment-links/${linkId}/del`,
+  },
   RECONCILIATION: {
     DISCREPANCIES: {
       LIST: "/v1/reconciliation/discrepancies",

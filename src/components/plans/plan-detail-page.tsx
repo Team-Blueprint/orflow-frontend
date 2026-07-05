@@ -3,10 +3,15 @@ import { useParams, useNavigate, Link } from "@tanstack/react-router"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { apiClient } from "@/api/apiClient"
 import { ENDPOINTS } from "@/api/ENDPOINTS"
+import { useCustomers } from "@/api/hooks/useCustomers"
+import { usePaymentLinks, useDeletePaymentLink } from "@/api/hooks/usePaymentLinks"
+import type { CustomerRead } from "@/api/types/customers"
+import type { PaymentLink } from "@/api/types/payment-links"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { PlanDetailSkeleton } from "@/components/skeletons/plan-detail-skeleton"
 import { formatNaira } from "@/lib/currency"
+import { CreatePaymentLinkModal } from "./create-payment-link-modal"
 
 interface Plan {
   id: string
@@ -17,6 +22,8 @@ interface Plan {
   interval_count: number
   trial_period_days: number | null
   installments_count: number | null
+  subscription_count: number
+  total_revenue: number
   status: "active" | "archived"
   created_at: string
 }
@@ -30,23 +37,8 @@ interface Subscription {
   next_billing_date?: string
 }
 
-interface Subscriber {
-  email: string
-  plan: string
-  activity_status: "active" | "inactive" | "suspended"
-  last_seen: string
-}
-
-interface PaymentLink {
-  id: string
-  url: string
-  plan_name: string
-  status?: "active" | "expired"
-  total_visits?: number
-}
-
 export function PlanDetailPage() {
-  const { planId } = useParams({ from: "/dashboard/$projectId/plans/$planId" })
+  const { planId, projectId } = useParams({ from: "/dashboard/$projectId/plans/$planId" })
   const navigate = useNavigate()
   const queryClient = useQueryClient()
 
@@ -61,16 +53,15 @@ export function PlanDetailPage() {
     enabled: !!planId,
   })
 
-  const { data: paymentLinks = [] } = useQuery<PaymentLink[]> ({
-    queryKey: ["paymentLinks", planId],
-    queryFn: () => apiClient.get(`/v1/plans/${planId}/payment-links`).then(res => res.data),
-    enabled: !!planId,
-  })
+  const { data: paymentLinks = [] } = usePaymentLinks(projectId, planId)
+  const { data: customersData, isLoading: isCustomersLoading } = useCustomers(projectId, { planId })
+  const deletePaymentLink = useDeletePaymentLink(projectId, planId)
 
   const [name, setName] = useState("")
   const [trialPeriodDays, setTrialPeriodDays] = useState<string>("")
   const [installmentsCount, setInstallmentsCount] = useState<string>("")
   const [activeTab, setActiveTab] = useState("subscriptions")
+  const [createModalOpen, setCreateModalOpen] = useState(false)
 
   useEffect(() => {
     if (plan) {
@@ -269,11 +260,19 @@ export function PlanDetailPage() {
                   )}
 
                   {activeTab === "subscribers" && (
-                    <SubscribersTable planName={plan.name} />
+                    <SubscribersTable
+                      customers={customersData?.data ?? []}
+                      isLoading={isCustomersLoading}
+                    />
                   )}
 
                   {activeTab === "payment-links" && (
-                    <PaymentLinksTable links={paymentLinks} planId={planId} />
+                    <PaymentLinksTable
+                      links={paymentLinks}
+                      planId={planId}
+                      onCreateClick={() => setCreateModalOpen(true)}
+                      onDelete={(linkId) => deletePaymentLink.mutate(linkId)}
+                    />
                   )}
                 </>
               )}
@@ -281,6 +280,13 @@ export function PlanDetailPage() {
           </div>
         </div>
       </div>
+
+      <CreatePaymentLinkModal
+        open={createModalOpen}
+        onOpenChange={setCreateModalOpen}
+        projectId={projectId}
+        planId={planId}
+      />
     </div>
   )
 }
@@ -360,16 +366,18 @@ function SubscriptionsTable({ subscriptions }: { subscriptions: Subscription[] }
   )
 }
 
-function SubscribersTable({ planName }: { planName: string }) {
-  const subscribers: Subscriber[] = [
-    { email: "alice@example.com", plan: planName, activity_status: "active", last_seen: "2026-06-28T14:30:00Z" },
-    { email: "bob@example.com", plan: planName, activity_status: "active", last_seen: "2026-06-25T09:15:00Z" },
-    { email: "carol@example.com", plan: planName, activity_status: "inactive", last_seen: "2026-05-10T11:00:00Z" },
-    { email: "dave@example.com", plan: planName, activity_status: "active", last_seen: "2026-07-01T16:45:00Z" },
-    { email: "eve@example.com", plan: planName, activity_status: "suspended", last_seen: "2026-04-20T08:00:00Z" },
-  ]
+function SubscribersTable({ customers, isLoading }: { customers: CustomerRead[]; isLoading: boolean }) {
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-4 p-6">
+        <div className="h-10 w-full bg-zinc-800 animate-pulse" />
+        <div className="h-10 w-full bg-zinc-900/50 animate-pulse" />
+        <div className="h-10 w-full bg-zinc-800 animate-pulse" />
+      </div>
+    )
+  }
 
-  if (subscribers.length === 0) {
+  if (customers.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
         <p className="text-sm text-ink-soft">No subscribers yet</p>
@@ -383,8 +391,8 @@ function SubscribersTable({ planName }: { planName: string }) {
       <div className="hidden lg:block overflow-x-auto">
         <table className="w-full text-left text-sm">
           <colgroup>
-            <col className="w-[30%]" />
-            <col className="w-[22%]" />
+            <col className="w-[28%]" />
+            <col className="w-[24%]" />
             <col className="w-[18%]" />
             <col className="w-[30%]" />
           </colgroup>
@@ -397,23 +405,25 @@ function SubscribersTable({ planName }: { planName: string }) {
             </tr>
           </thead>
           <tbody>
-            {subscribers.map((s, i) => (
-              <tr key={i} className="border-b border-hairline last:border-0 transition-colors hover:bg-midnight-soft/30">
-                <td className="px-4 py-3 text-ink">{s.email}</td>
-                <td className="px-4 py-3 text-sm text-ink-soft">{s.plan}</td>
+            {customers.map((c) => (
+              <tr key={c.id} className="border-b border-hairline last:border-0 transition-colors hover:bg-midnight-soft/30">
+                <td className="px-4 py-3 text-ink">{c.email}</td>
+                <td className="px-4 py-3 text-sm text-ink-soft">{c.plan_name ?? "—"}</td>
                 <td className="px-4 py-3">
-                  <Badge variant={s.activity_status === "active" ? "success" : s.activity_status === "suspended" ? "destructive" : "muted"} className="capitalize text-xs">
-                    {s.activity_status}
+                  <Badge variant={c.activity_status === "active" ? "success" : c.activity_status === "suspended" ? "destructive" : "muted"} className="capitalize text-xs">
+                    {c.activity_status}
                   </Badge>
                 </td>
                 <td className="px-4 py-3 text-xs text-ink-soft font-mono">
-                  {new Date(s.last_seen).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
+                  {c.last_seen
+                    ? new Date(c.last_seen).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
+                    : "—"}
                 </td>
               </tr>
             ))}
@@ -423,19 +433,21 @@ function SubscribersTable({ planName }: { planName: string }) {
 
       {/* Mobile cards */}
       <div className="flex flex-col gap-3 lg:hidden p-4">
-        {subscribers.map((s, i) => (
-          <div key={i} className="border border-hairline bg-paper p-4">
+        {customers.map((c) => (
+          <div key={c.id} className="border border-hairline bg-paper p-4">
             <div className="flex items-start justify-between gap-2">
-              <div className="text-sm font-medium text-ink truncate">{s.email}</div>
-              <Badge variant={s.activity_status === "active" ? "success" : s.activity_status === "suspended" ? "destructive" : "muted"} className="shrink-0 capitalize text-xs">
-                {s.activity_status}
+              <div className="text-sm font-medium text-ink truncate">{c.email}</div>
+              <Badge variant={c.activity_status === "active" ? "success" : c.activity_status === "suspended" ? "destructive" : "muted"} className="shrink-0 capitalize text-xs">
+                {c.activity_status}
               </Badge>
             </div>
-            <div className="mt-2 text-[11px] text-ink-soft">Plan: {s.plan}</div>
+            <div className="mt-2 text-[11px] text-ink-soft">Plan: {c.plan_name ?? "—"}</div>
             <div className="mt-1 text-[11px] text-ink-soft">
-              Last seen: {new Date(s.last_seen).toLocaleDateString("en-US", {
-                month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit",
-              })}
+              Last seen: {c.last_seen
+                ? new Date(c.last_seen).toLocaleDateString("en-US", {
+                    month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit",
+                  })
+                : "—"}
             </div>
           </div>
         ))}
@@ -444,16 +456,14 @@ function SubscribersTable({ planName }: { planName: string }) {
   )
 }
 
-function PaymentLinksTable({ links, planId: _planId }: { links: PaymentLink[]; planId: string }) {
+function PaymentLinksTable({ links, onCreateClick, onDelete }: { links: PaymentLink[]; planId: string; onCreateClick: () => void; onDelete: (linkId: string) => void }) {
   return (
     <div>
       <div className="flex items-center justify-between border-b border-hairline px-4 py-3">
         <h3 className="text-sm font-medium text-ink">Quick Checkout Links</h3>
         <button
           type="button"
-          onClick={() => {
-            // Handle create payment link
-          }}
+          onClick={onCreateClick}
           className="bg-primary text-white hover:bg-primary-hover text-xs font-bold px-4 py-2 cursor-pointer"
         >
           + Create Payment Link
@@ -516,12 +526,20 @@ function PaymentLinksTable({ links, planId: _planId }: { links: PaymentLink[]; p
                     </td>
                     <td className="px-4 py-3 text-xs text-ink-soft font-mono">{link.total_visits ?? 0}</td>
                     <td className="px-4 py-3">
-                      <button
-                        onClick={() => window.open(`${window.location.origin}/pay/${link.id}`, "_blank")}
-                        className="text-xs text-ink-soft hover:text-primary transition-colors cursor-pointer"
-                      >
-                        Open
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => window.open(`${window.location.origin}/pay/${link.id}`, "_blank")}
+                          className="text-xs text-ink-soft hover:text-primary transition-colors cursor-pointer"
+                        >
+                          Open
+                        </button>
+                        <button
+                          onClick={() => onDelete(link.id)}
+                          className="text-xs text-red-400 hover:text-red-300 transition-colors cursor-pointer"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -554,12 +572,20 @@ function PaymentLinksTable({ links, planId: _planId }: { links: PaymentLink[]; p
                 </div>
                 <div className="mt-1 flex items-center justify-between text-[11px] text-ink-soft">
                   <span>{link.total_visits ?? 0} visits</span>
-                  <button
-                    onClick={() => window.open(`${window.location.origin}/pay/${link.id}`, "_blank")}
-                    className="text-ink-soft hover:text-primary transition-colors cursor-pointer"
-                  >
-                    Open →
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => window.open(`${window.location.origin}/pay/${link.id}`, "_blank")}
+                      className="text-ink-soft hover:text-primary transition-colors cursor-pointer"
+                    >
+                      Open →
+                    </button>
+                    <button
+                      onClick={() => onDelete(link.id)}
+                      className="text-red-400 hover:text-red-300 transition-colors cursor-pointer"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
