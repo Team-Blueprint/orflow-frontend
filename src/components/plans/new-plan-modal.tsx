@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select"
 import { apiClient } from "@/api/apiClient"
 import { ENDPOINTS } from "@/api/ENDPOINTS"
+import { useToast } from "@/components/webhooks/utils/toast"
 
 function InfoTooltip({ text }: { text: string }) {
   const [isOpen, setIsOpen] = useState(false)
@@ -78,6 +79,7 @@ interface NewPlanModalProps {
 
 export function NewPlanModal({ open, onOpenChange }: NewPlanModalProps) {
   const queryClient = useQueryClient()
+  const toast = useToast()
   const [name, setName] = useState("")
   const [amount, setAmount] = useState("")
   const [interval, setInterval] = useState("monthly")
@@ -90,11 +92,13 @@ export function NewPlanModal({ open, onOpenChange }: NewPlanModalProps) {
     mutationFn: (data: Record<string, unknown>) =>
       apiClient.post(ENDPOINTS.PLANS.CREATE, data),
     onSuccess: () => {
+      toast.success("Plan created successfully")
       queryClient.invalidateQueries({ queryKey: ["plans"] })
       resetForm()
       onOpenChange(false)
     },
     onError: (err: unknown) => {
+      toast.error("Failed to register plan configuration")
       if (err instanceof AxiosError && err.response?.data?.error?.message) {
         setError(err.response.data.error.message)
       } else if (err instanceof AxiosError && err.response?.data?.detail) {

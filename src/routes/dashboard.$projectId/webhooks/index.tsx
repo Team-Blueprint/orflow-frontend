@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { cn } from "@/lib/utils";
 import { WebhookFilters, WebhookEventTable, WebhookSkeleton } from "@/components/webhooks";
 import type { OutboundWebhookEventRead } from "@/api/types/webhooks";
+import { useToast } from "@/components/webhooks/utils/toast";
 
 export const Route = createFileRoute("/dashboard/$projectId/webhooks/")({
   component: WebhooksPage,
@@ -23,6 +24,7 @@ const ITEMS_PER_PAGE = 20;
 function WebhooksPage() {
   const { projectId } = Route.useParams();
   const queryClient = useQueryClient();
+  const toast = useToast();
 
   const { data: webhookEndpoints, isLoading: isEndpointsLoading, refetch: refetchEndpoints } = useWebhookEndpoints(projectId);
 
@@ -89,28 +91,54 @@ function WebhooksPage() {
     e.preventDefault();
     if (webhookUrl.trim() === "") return;
 
-    if (currentWebhookConfig) {
-      await deleteEndpointMutation.mutateAsync(currentWebhookConfig.id);
-      await createEndpointMutation.mutateAsync({ url: webhookUrl });
-    } else {
-      await createEndpointMutation.mutateAsync({ url: webhookUrl });
+    try {
+      if (currentWebhookConfig) {
+        await deleteEndpointMutation.mutateAsync(currentWebhookConfig.id);
+        await createEndpointMutation.mutateAsync({ url: webhookUrl });
+      } else {
+        await createEndpointMutation.mutateAsync({ url: webhookUrl });
+      }
+      toast.success("Webhook configuration saved");
+      refetchEndpoints();
+    } catch {
+      toast.error("Failed to save webhook configuration");
     }
-    refetchEndpoints();
   }
 
   async function handleRegenerateSecret() {
     if (!currentWebhookConfig) return;
-    await deleteEndpointMutation.mutateAsync(currentWebhookConfig.id);
-    await createEndpointMutation.mutateAsync({ url: currentWebhookConfig.url });
-    refetchEndpoints();
+    try {
+      await deleteEndpointMutation.mutateAsync(currentWebhookConfig.id);
+      await createEndpointMutation.mutateAsync({ url: currentWebhookConfig.url });
+      toast.success("Webhook configuration saved");
+      refetchEndpoints();
+    } catch {
+      toast.error("Failed to regenerate webhook secret");
+    }
   }
 
   async function handleDeleteEndpoint() {
     if (!currentWebhookConfig) return;
-    await deleteEndpointMutation.mutateAsync(currentWebhookConfig.id);
-    setWebhookUrl("");
-    queryClient.setQueryData(["webhooks", projectId, "endpoints"], []);
-    setDeleteConfirmOpen(false);
+    try {
+      await deleteEndpointMutation.mutateAsync(currentWebhookConfig.id);
+      setWebhookUrl("");
+      queryClient.setQueryData(["webhooks", projectId, "endpoints"], []);
+      setDeleteConfirmOpen(false);
+      toast.success("Webhook configuration saved");
+    } catch {
+      toast.error("Failed to delete webhook");
+    }
+  }
+
+  async function handleTestPing() {
+    if (!currentWebhookConfig) return;
+    toast.loading("Sending test payload...");
+    try {
+      await createEndpointMutation.mutateAsync({ url: currentWebhookConfig.url });
+      toast.success("Ping successful");
+    } catch {
+      toast.error("Ping failed to deliver");
+    }
   }
 
   if (isEndpointsLoading && !webhookEndpoints) {
@@ -187,6 +215,15 @@ function WebhooksPage() {
                 </div>
 
                 <div className="flex items-center justify-end gap-3 pt-4 border-t border-hairline">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-xs"
+                    onClick={handleTestPing}
+                    disabled={createEndpointMutation.isPending || deleteEndpointMutation.isPending}
+                  >
+                    Test Ping
+                  </Button>
                   <Button
                     variant="outline"
                     size="sm"

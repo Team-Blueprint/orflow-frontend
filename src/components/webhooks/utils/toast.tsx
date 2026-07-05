@@ -85,5 +85,12 @@ export function useToast() {
   if (!context) {
     throw new Error("useToast must be used within a ToastProvider");
   }
-  return context;
+
+  return {
+    ...context,
+    loading: (message: string) => context.toast(message, "default"),
+    success: (message: string) => context.toast(message, "success"),
+    error: (message: string) => context.toast(message, "destructive"),
+    warning: (message: string) => context.toast(message, "warning"),
+  };
 }

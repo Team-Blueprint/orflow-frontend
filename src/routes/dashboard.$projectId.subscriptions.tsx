@@ -6,8 +6,10 @@ import { formatNaira } from "@/lib/currency"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog as DialogPrimitive } from "radix-ui"
 import { ChartSquare } from "@/lib/icons"
+import { useToast } from "@/components/webhooks/utils/toast"
 
 export const Route = createFileRoute("/dashboard/$projectId/subscriptions")({
   component: SubscriptionsPage,
@@ -34,6 +36,7 @@ function SubscriptionsPage() {
   const cancelMutation = useCancelSubscription(projectId)
   const pauseMutation = usePauseSubscription(projectId)
   const resumeMutation = useResumeSubscription(projectId)
+  const toast = useToast()
 
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
@@ -78,19 +81,31 @@ function SubscriptionsPage() {
 
   function handleCancel(sub: Subscription) {
     if (sub.status === "active" || sub.status === "paused") {
-      cancelMutation.mutate(sub.id)
+      toast.loading("Processing request...")
+      cancelMutation.mutate(sub.id, {
+        onSuccess: () => toast.success("Subscription status updated"),
+        onError: () => toast.error("Could not modify subscription"),
+      })
     }
   }
 
   function handlePause(sub: Subscription) {
     if (sub.status === "active") {
-      pauseMutation.mutate(sub.id)
+      toast.loading("Processing request...")
+      pauseMutation.mutate(sub.id, {
+        onSuccess: () => toast.success("Subscription status updated"),
+        onError: () => toast.error("Could not modify subscription"),
+      })
     }
   }
 
   function handleResume(sub: Subscription) {
     if (sub.status === "paused") {
-      resumeMutation.mutate(sub.id)
+      toast.loading("Processing request...")
+      resumeMutation.mutate(sub.id, {
+        onSuccess: () => toast.success("Subscription status updated"),
+        onError: () => toast.error("Could not modify subscription"),
+      })
     }
   }
 
@@ -104,23 +119,18 @@ function SubscriptionsPage() {
       </div>
 
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
-        <div className="flex gap-1.5 flex-wrap">
-          {STATUS_FILTERS.map((f) => (
-            <button
-              key={f}
-              type="button"
-              onClick={() => setStatusFilter(f)}
-              className={cn(
-                "px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer capitalize",
-                statusFilter === f
-                  ? "bg-primary text-white"
-                  : "text-ink-soft border border-hairline hover:bg-midnight-soft",
-              )}
-            >
-              {f === "past_due" ? "Past Due" : f}
-            </button>
-          ))}
-        </div>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-40">
+            <SelectValue placeholder="All statuses" />
+          </SelectTrigger>
+          <SelectContent>
+            {STATUS_FILTERS.map((f) => (
+              <SelectItem key={f} value={f} className="capitalize">
+                {f === "past_due" ? "Past Due" : f}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <Input
           placeholder="Search by name, email, plan..."
           value={search}
