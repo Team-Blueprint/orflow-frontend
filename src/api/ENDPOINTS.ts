@@ -67,6 +67,9 @@ export const ENDPOINTS = {
     UPDATE: (projectId: string) => `/v1/projects/${projectId}/update`,
     DELETE: (projectId: string) => `/v1/projects/${projectId}/del`,
   },
+  ANALYTICS: {
+    GET: (projectId: string) => `/v1/projects/${projectId}/analytics`,
+  },
   RECONCILIATION: {
     DISCREPANCIES: {
       LIST: "/v1/reconciliation/discrepancies",
