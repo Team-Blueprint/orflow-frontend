@@ -37,6 +37,8 @@ export const ENDPOINTS = {
   },
   SUBSCRIPTIONS: {
     CREATE: "/v1/subscriptions/create",
+    LIST: "/v1/subscriptions/list",
+    GET: (subscriptionId: string) => `/v1/subscriptions/${subscriptionId}`,
     CANCEL: (subscriptionId: string) => `/v1/subscriptions/${subscriptionId}/cancel`,
     PAUSE: (subscriptionId: string) => `/v1/subscriptions/${subscriptionId}/pause`,
     RESUME: (subscriptionId: string) => `/v1/subscriptions/${subscriptionId}/resume`,
