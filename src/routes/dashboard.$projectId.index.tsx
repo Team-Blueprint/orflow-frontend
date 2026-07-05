@@ -1,16 +1,26 @@
+import { useState } from "react"
 import { createFileRoute, useParams } from "@tanstack/react-router"
 import { useAnalytics, ZEROED_ANALYTICS } from "@/api/hooks/useAnalytics"
 import { KPICard } from "@/components/kpi-card"
 import { RevenueChart } from "@/components/revenue-chart"
+import { TimeRangeSelector } from "@/components/time-range-selector"
 import { AnalyticsSkeleton } from "@/components/skeletons/analytics-skeleton"
 
 export const Route = createFileRoute("/dashboard/$projectId/")({
   component: Overview,
 })
 
+const LABELS: Record<number, string> = {
+  1: "last 24 hours",
+  7: "last 7 days",
+  30: "last 30 days",
+  90: "last 90 days",
+}
+
 function Overview() {
   const { projectId } = useParams({ from: "/dashboard/$projectId/" })
-  const { data, isLoading } = useAnalytics(projectId)
+  const [days, setDays] = useState(30)
+  const { data, isLoading } = useAnalytics(projectId, days)
 
   const analytics = data ?? ZEROED_ANALYTICS
   const { summary, revenue_chart } = analytics
@@ -46,6 +56,12 @@ function Overview() {
           </div>
 
           <div className="mt-3 sm:mt-4">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs sm:text-sm font-semibold text-ink tracking-tight">
+                Revenue ({LABELS[days] ?? `${days} days`})
+              </p>
+              <TimeRangeSelector value={days} onChange={setDays} />
+            </div>
             <RevenueChart data={revenue_chart} />
           </div>
         </>
