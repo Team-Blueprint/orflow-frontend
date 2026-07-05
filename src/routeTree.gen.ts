@@ -19,6 +19,7 @@ import { Route as DashboardSettingsRouteImport } from './routes/dashboard.settin
 import { Route as DashboardNewRouteImport } from './routes/dashboard.new'
 import { Route as DashboardProjectIdRouteImport } from './routes/dashboard.$projectId'
 import { Route as DashboardProjectIdIndexRouteImport } from './routes/dashboard.$projectId.index'
+import { Route as DashboardProjectIdSubscriptionsRouteImport } from './routes/dashboard.$projectId.subscriptions'
 import { Route as DashboardProjectIdSettingsRouteImport } from './routes/dashboard.$projectId.settings'
 import { Route as DashboardProjectIdPlansRouteImport } from './routes/dashboard.$projectId.plans'
 import { Route as DashboardProjectIdWebhooksIndexRouteImport } from './routes/dashboard.$projectId/webhooks/index'
@@ -75,6 +76,12 @@ const DashboardProjectIdIndexRoute = DashboardProjectIdIndexRouteImport.update({
   path: '/',
   getParentRoute: () => DashboardProjectIdRoute,
 } as any)
+const DashboardProjectIdSubscriptionsRoute =
+  DashboardProjectIdSubscriptionsRouteImport.update({
+    id: '/subscriptions',
+    path: '/subscriptions',
+    getParentRoute: () => DashboardProjectIdRoute,
+  } as any)
 const DashboardProjectIdSettingsRoute =
   DashboardProjectIdSettingsRouteImport.update({
     id: '/settings',
@@ -117,6 +124,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/$projectId/plans': typeof DashboardProjectIdPlansRouteWithChildren
   '/dashboard/$projectId/settings': typeof DashboardProjectIdSettingsRoute
+  '/dashboard/$projectId/subscriptions': typeof DashboardProjectIdSubscriptionsRoute
   '/dashboard/$projectId/': typeof DashboardProjectIdIndexRoute
   '/dashboard/$projectId/plans/$planId': typeof DashboardProjectIdPlansPlanIdRoute
   '/dashboard/$projectId/plans/': typeof DashboardProjectIdPlansIndexRoute
@@ -131,6 +139,7 @@ export interface FileRoutesByTo {
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard': typeof DashboardIndexRoute
   '/dashboard/$projectId/settings': typeof DashboardProjectIdSettingsRoute
+  '/dashboard/$projectId/subscriptions': typeof DashboardProjectIdSubscriptionsRoute
   '/dashboard/$projectId': typeof DashboardProjectIdIndexRoute
   '/dashboard/$projectId/plans/$planId': typeof DashboardProjectIdPlansPlanIdRoute
   '/dashboard/$projectId/plans': typeof DashboardProjectIdPlansIndexRoute
@@ -149,6 +158,7 @@ export interface FileRoutesById {
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/$projectId/plans': typeof DashboardProjectIdPlansRouteWithChildren
   '/dashboard/$projectId/settings': typeof DashboardProjectIdSettingsRoute
+  '/dashboard/$projectId/subscriptions': typeof DashboardProjectIdSubscriptionsRoute
   '/dashboard/$projectId/': typeof DashboardProjectIdIndexRoute
   '/dashboard/$projectId/plans/$planId': typeof DashboardProjectIdPlansPlanIdRoute
   '/dashboard/$projectId/plans/': typeof DashboardProjectIdPlansIndexRoute
@@ -168,6 +178,7 @@ export interface FileRouteTypes {
     | '/dashboard/'
     | '/dashboard/$projectId/plans'
     | '/dashboard/$projectId/settings'
+    | '/dashboard/$projectId/subscriptions'
     | '/dashboard/$projectId/'
     | '/dashboard/$projectId/plans/$planId'
     | '/dashboard/$projectId/plans/'
@@ -182,6 +193,7 @@ export interface FileRouteTypes {
     | '/dashboard/settings'
     | '/dashboard'
     | '/dashboard/$projectId/settings'
+    | '/dashboard/$projectId/subscriptions'
     | '/dashboard/$projectId'
     | '/dashboard/$projectId/plans/$planId'
     | '/dashboard/$projectId/plans'
@@ -199,6 +211,7 @@ export interface FileRouteTypes {
     | '/dashboard/'
     | '/dashboard/$projectId/plans'
     | '/dashboard/$projectId/settings'
+    | '/dashboard/$projectId/subscriptions'
     | '/dashboard/$projectId/'
     | '/dashboard/$projectId/plans/$planId'
     | '/dashboard/$projectId/plans/'
@@ -285,6 +298,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardProjectIdIndexRouteImport
       parentRoute: typeof DashboardProjectIdRoute
     }
+    '/dashboard/$projectId/subscriptions': {
+      id: '/dashboard/$projectId/subscriptions'
+      path: '/subscriptions'
+      fullPath: '/dashboard/$projectId/subscriptions'
+      preLoaderRoute: typeof DashboardProjectIdSubscriptionsRouteImport
+      parentRoute: typeof DashboardProjectIdRoute
+    }
     '/dashboard/$projectId/settings': {
       id: '/dashboard/$projectId/settings'
       path: '/settings'
@@ -342,6 +362,7 @@ const DashboardProjectIdPlansRouteWithChildren =
 interface DashboardProjectIdRouteChildren {
   DashboardProjectIdPlansRoute: typeof DashboardProjectIdPlansRouteWithChildren
   DashboardProjectIdSettingsRoute: typeof DashboardProjectIdSettingsRoute
+  DashboardProjectIdSubscriptionsRoute: typeof DashboardProjectIdSubscriptionsRoute
   DashboardProjectIdIndexRoute: typeof DashboardProjectIdIndexRoute
   DashboardProjectIdWebhooksIndexRoute: typeof DashboardProjectIdWebhooksIndexRoute
 }
@@ -349,6 +370,7 @@ interface DashboardProjectIdRouteChildren {
 const DashboardProjectIdRouteChildren: DashboardProjectIdRouteChildren = {
   DashboardProjectIdPlansRoute: DashboardProjectIdPlansRouteWithChildren,
   DashboardProjectIdSettingsRoute: DashboardProjectIdSettingsRoute,
+  DashboardProjectIdSubscriptionsRoute: DashboardProjectIdSubscriptionsRoute,
   DashboardProjectIdIndexRoute: DashboardProjectIdIndexRoute,
   DashboardProjectIdWebhooksIndexRoute: DashboardProjectIdWebhooksIndexRoute,
 }

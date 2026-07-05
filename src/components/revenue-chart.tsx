@@ -1,5 +1,6 @@
 import { useMemo, useState, useRef, useCallback } from "react"
 import type { RevenueDataPoint } from "@/api/types/analytics"
+import { formatNaira } from "@/lib/currency"
 
 interface RevenueChartProps {
   data: RevenueDataPoint[]
@@ -53,7 +54,7 @@ function RevenueChart({ data }: RevenueChartProps) {
     return (
       <div className="border border-hairline bg-paper p-4 sm:p-5 flex items-center justify-center h-56">
         <p className="text-3xl font-bold tabular-nums text-ink">
-          ₦{pt.revenue.toLocaleString("en-US")}
+          {formatNaira(pt.revenue)}
         </p>
       </div>
     )
@@ -191,7 +192,7 @@ function RevenueChart({ data }: RevenueChartProps) {
         >
           <p className="text-[11px] text-zinc-400 whitespace-nowrap">{formatDateFull(hovered.date)}</p>
           <p className="text-sm font-semibold text-ink tabular-nums mt-0.5">
-            ₦{hovered.revenue.toLocaleString("en-US")}
+            {formatNaira(hovered.revenue)}
           </p>
           <p className="text-[11px] text-zinc-500 whitespace-nowrap">{hovered.volume} transactions</p>
         </div>

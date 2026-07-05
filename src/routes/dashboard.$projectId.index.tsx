@@ -5,6 +5,7 @@ import { KPICard } from "@/components/kpi-card"
 import { RevenueChart } from "@/components/revenue-chart"
 import { TimeRangeSelector } from "@/components/time-range-selector"
 import { AnalyticsSkeleton } from "@/components/skeletons/analytics-skeleton"
+import { formatNaira } from "@/lib/currency"
 
 export const Route = createFileRoute("/dashboard/$projectId/")({
   component: Overview,
@@ -24,7 +25,6 @@ function Overview() {
 
   const analytics = data ?? ZEROED_ANALYTICS
   const { summary, revenue_chart } = analytics
-  const fmt = (n: number) => n.toLocaleString("en-US")
 
   return (
     <div className="p-4 sm:px-8 sm:pt-4 sm:pb-8">
@@ -42,16 +42,16 @@ function Overview() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             <KPICard
               label="Total Volume"
-              value={`${summary.currency} ${fmt(summary.total_volume)}`}
+              value={formatNaira(summary.total_volume)}
             />
             <KPICard
               label="Active Subscribers"
-              value={fmt(summary.active_subscribers)}
+              value={summary.active_subscribers.toLocaleString("en-US")}
               variant={summary.active_subscribers > 0 ? "success" : "default"}
             />
             <KPICard
               label="Total Customers"
-              value={fmt(summary.total_customers)}
+              value={summary.total_customers.toLocaleString("en-US")}
             />
           </div>
 

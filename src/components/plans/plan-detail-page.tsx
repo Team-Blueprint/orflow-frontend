@@ -6,6 +6,7 @@ import { ENDPOINTS } from "@/api/ENDPOINTS"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { PlanDetailSkeleton } from "@/components/skeletons/plan-detail-skeleton"
+import { formatNaira } from "@/lib/currency"
 
 interface Plan {
   id: string
@@ -147,7 +148,7 @@ export function PlanDetailPage() {
             </button>
             <h1 className="text-2xl sm:text-3xl font-bold text-ink tracking-tight">{plan.name}</h1>
             <p className="text-xs sm:text-sm text-ink-soft mt-1 sm:mt-1.5">
-              Manage your {plan.interval} pricing tier for this workspace.
+              {formatNaira(plan.amount)} / {plan.interval} &mdash; Manage your pricing tier for this workspace.
             </p>
           </div>
           <div className="flex gap-3">

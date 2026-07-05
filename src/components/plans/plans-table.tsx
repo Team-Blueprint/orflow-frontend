@@ -2,6 +2,7 @@ import { useMemo, useState } from "react"
 import { Link, useNavigate } from "@tanstack/react-router"
 import { useDebounce } from "@/hooks/use-debounce"
 import { Badge } from "@/components/ui/badge"
+import { formatNaira } from "@/lib/currency"
 import {
   Select,
   SelectContent,
@@ -110,7 +111,7 @@ export function PlansTable({ plans, projectId }: PlansTableProps) {
               <div>
                 <p className="text-sm font-bold text-ink">{plan.name}</p>
                 <p className="mt-1 text-lg font-mono text-ink">
-                  ₦{Number(plan.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                  {formatNaira(plan.amount)}
                 </p>
               </div>
               <Badge variant={plan.status === "active" ? "default" : "secondary"}>
@@ -149,7 +150,7 @@ function PlanRow({ plan, projectId }: { plan: Plan; projectId: string }) {
         <div className="text-sm font-bold text-ink">{plan.name}</div>
       </td>
       <td className="px-4 py-3 text-sm text-ink font-mono">
-        ₦{Number(plan.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+        {formatNaira(plan.amount)}
       </td>
       <td className="px-4 py-3">
         <span className="text-[10px] font-semibold uppercase tracking-wider text-ink-soft bg-paper border border-hairline px-2 py-0.5">
