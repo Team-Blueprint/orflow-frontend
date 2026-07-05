@@ -13,13 +13,19 @@ export const Route = createFileRoute("/dashboard/$projectId/subscriptions")({
   component: SubscriptionsPage,
 })
 
-const STATUS_FILTERS = ["all", "active", "past_due", "paused", "canceled"] as const
+const STATUS_FILTERS = ["all", "active", "past_due", "paused", "canceled", "trialing", "unpaid", "defaulted", "completed"] as const
 
 const STATUS_BADGE: Record<string, "success" | "destructive" | "muted" | "info"> = {
   active: "success",
+  trialing: "info",
   past_due: "destructive",
-  canceled: "muted",
+  unpaid: "destructive",
   paused: "info",
+  canceled: "muted",
+  defaulted: "destructive",
+  completed: "muted",
+  incomplete: "muted",
+  incomplete_expired: "muted",
 }
 
 function SubscriptionsPage() {
@@ -55,7 +61,11 @@ function SubscriptionsPage() {
     [subscriptions, activeId],
   )
 
-  function select(sub: Subscription) {
+  function selectDesktop(sub: Subscription) {
+    setActiveId(sub.id)
+  }
+
+  function selectMobile(sub: Subscription) {
     setActiveId(sub.id)
     setMobileOpen(true)
   }
@@ -93,9 +103,8 @@ function SubscriptionsPage() {
         </p>
       </div>
 
-      {/* Filters */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
-        <div className="flex gap-1.5">
+        <div className="flex gap-1.5 flex-wrap">
           {STATUS_FILTERS.map((f) => (
             <button
               key={f}
@@ -127,26 +136,28 @@ function SubscriptionsPage() {
       ) : (
         <>
           {/* Desktop split layout */}
-          <div className="hidden lg:flex gap-4">
+          <div className="hidden lg:flex gap-4 items-start">
             <div className="w-[60%] border border-hairline bg-paper overflow-x-auto">
               <SubscriptionTable
                 subscriptions={filtered}
                 activeId={activeId}
-                onSelect={select}
+                onSelect={selectDesktop}
               />
             </div>
-            <div className="w-[40%] border border-hairline bg-paper">
-              {activeSub ? (
-                <SubscriptionDetailPanel
-                  sub={activeSub}
-                  onCancel={handleCancel}
-                  onPause={handlePause}
-                  onResume={handleResume}
-                  isMutating={isMutating}
-                />
-              ) : (
-                <EmptyDetail />
-              )}
+            <div className="w-[40%] sticky top-4">
+              <div className="border border-hairline bg-paper">
+                {activeSub ? (
+                  <SubscriptionDetailPanel
+                    sub={activeSub}
+                    onCancel={handleCancel}
+                    onPause={handlePause}
+                    onResume={handleResume}
+                    isMutating={isMutating}
+                  />
+                ) : (
+                  <EmptyDetail />
+                )}
+              </div>
             </div>
           </div>
 
@@ -155,21 +166,25 @@ function SubscriptionsPage() {
             <SubscriptionTable
               subscriptions={filtered}
               activeId={activeId}
-              onSelect={select}
+              onSelect={selectMobile}
             />
           </div>
 
-          <SlideOver open={mobileOpen} onClose={closeMobile}>
-            {activeSub && (
-              <SubscriptionDetailPanel
-                sub={activeSub}
-                onCancel={handleCancel}
-                onPause={handlePause}
-                onResume={handleResume}
-                isMutating={isMutating}
-              />
-            )}
-          </SlideOver>
+          {/* Mobile slide-over — only renders on mobile */}
+          <div className="block md:hidden">
+            <SlideOver open={mobileOpen} onClose={closeMobile}>
+              {activeSub && (
+                <SubscriptionDetailPanel
+                  sub={activeSub}
+                  onCancel={handleCancel}
+                  onPause={handlePause}
+                  onResume={handleResume}
+                  isMutating={isMutating}
+                  onClose={closeMobile}
+                />
+              )}
+            </SlideOver>
+          </div>
         </>
       )}
     </div>
@@ -236,15 +251,15 @@ function SubscriptionTable({
             <td className="px-4 py-3 font-mono text-sm text-ink">{formatNaira(sub.amount)}</td>
             <td className="px-4 py-3">
               <Badge variant={STATUS_BADGE[sub.status] ?? "muted"} className="capitalize text-[10px]">
-                {sub.status === "past_due" ? "Past Due" : sub.status}
+                {sub.status === "past_due" ? "Past Due" : sub.status === "incomplete_expired" ? "Expired" : sub.status}
               </Badge>
             </td>
             <td className="px-4 py-3 text-xs text-ink-soft font-mono">
-              {new Date(sub.started_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+              {new Date(sub.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
             </td>
             <td className="px-4 py-3 text-xs text-ink-soft font-mono">
-              {sub.next_billing_date
-                ? new Date(sub.next_billing_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+              {sub.current_period_end
+                ? new Date(sub.current_period_end).toLocaleDateString("en-US", { month: "short", day: "numeric" })
                 : "—"}
             </td>
           </tr>
@@ -258,7 +273,7 @@ function SubscriptionTable({
 
 function EmptyDetail() {
   return (
-    <div className="flex flex-col items-center justify-center h-full min-h-[300px] px-6 text-center">
+    <div className="flex flex-col items-center justify-center min-h-[300px] px-6 py-12 text-center">
       <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.25" className="text-zinc-700">
         <rect x="2" y="2" width="20" height="20" rx="2" />
         <path d="M8 2v20" />
@@ -280,22 +295,40 @@ function SubscriptionDetailPanel({
   onPause,
   onResume,
   isMutating,
+  onClose,
 }: {
   sub: Subscription
   onCancel: (s: Subscription) => void
   onPause: (s: Subscription) => void
   onResume: (s: Subscription) => void
   isMutating: boolean
+  onClose?: () => void
 }) {
+  function fmtDate(d: string | null) {
+    if (!d) return "—"
+    return new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+  }
+
   return (
-    <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="border-b border-hairline px-5 py-4">
+    <div className="flex flex-col">
+      <div className="border-b border-hairline px-5 py-4 flex items-center justify-between">
         <h2 className="text-sm font-semibold text-ink tracking-tight">Subscription Details</h2>
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-ink-soft hover:text-ink transition-colors cursor-pointer"
+            style={{ minHeight: 44, minWidth: 44 }}
+            aria-label="Close"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
+          </button>
+        )}
       </div>
 
-      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-6">
-        {/* Customer Section */}
+      <div className="px-5 py-4 space-y-6">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-widest text-ink-soft mb-3">Customer</p>
           <div className="flex items-center gap-3">
@@ -319,39 +352,28 @@ function SubscriptionDetailPanel({
           )}
         </div>
 
-        {/* Subscription Metrics */}
         <div>
           <p className="text-[10px] font-bold uppercase tracking-widest text-ink-soft mb-3">Subscription</p>
           <div className="space-y-3">
             <DetailRow label="ID" value={sub.id} mono />
             <DetailRow label="Plan" value={sub.plan_name} />
             <DetailRow label="Amount" value={formatNaira(sub.amount)} mono />
-            <DetailRow label="Interval" value={sub.interval} capitalize />
-            <DetailRow label="Status" value={sub.status === "past_due" ? "Past Due" : sub.status} capitalize>
+            <DetailRow label="Type" value={sub.type} capitalize />
+            <DetailRow label="Status" value={sub.status === "past_due" ? "Past Due" : sub.status === "incomplete_expired" ? "Expired" : sub.status} capitalize>
               <Badge variant={STATUS_BADGE[sub.status] ?? "muted"} className="capitalize text-[10px]">
-                {sub.status === "past_due" ? "Past Due" : sub.status}
+                {sub.status === "past_due" ? "Past Due" : sub.status === "incomplete_expired" ? "Expired" : sub.status}
               </Badge>
             </DetailRow>
-            <DetailRow
-              label="Started"
-              value={new Date(sub.started_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-            />
-            {sub.next_billing_date && (
-              <DetailRow
-                label="Next billing"
-                value={new Date(sub.next_billing_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-              />
-            )}
-            {sub.ended_at && (
-              <DetailRow
-                label="Ended"
-                value={new Date(sub.ended_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-              />
+            <DetailRow label="Started" value={fmtDate(sub.created_at)} />
+            <DetailRow label="Next billing" value={fmtDate(sub.current_period_end)} />
+            {sub.trial_end && <DetailRow label="Trial ends" value={fmtDate(sub.trial_end)} />}
+            {sub.canceled_at && <DetailRow label="Canceled" value={fmtDate(sub.canceled_at)} />}
+            {sub.cancel_at_period_end && (
+              <DetailRow label="Cancel at period end" value="Yes" />
             )}
           </div>
         </div>
 
-        {/* Quick Actions */}
         <div>
           <p className="text-[10px] font-bold uppercase tracking-widest text-ink-soft mb-3">Quick Actions</p>
           <div className="flex flex-col gap-2">
@@ -446,24 +468,8 @@ function SlideOver({
             "duration-200",
           )}
         >
-          <div className="flex flex-col h-full">
-            <div className="flex items-center justify-between border-b border-hairline px-5 py-4">
-              <h2 className="text-sm font-semibold text-ink tracking-tight">Subscription Details</h2>
-              <button
-                type="button"
-                onClick={onClose}
-                className="text-ink-soft hover:text-ink transition-colors cursor-pointer"
-                style={{ minHeight: 44, minWidth: 44 }}
-                aria-label="Close"
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M18 6L6 18M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            <div className="flex-1 overflow-y-auto">
-              {children}
-            </div>
+          <div className="flex flex-col h-full overflow-y-auto">
+            {children}
           </div>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>

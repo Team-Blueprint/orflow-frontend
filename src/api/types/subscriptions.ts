@@ -1,15 +1,24 @@
 export interface Subscription {
   id: string
+  tenant_id: string
+  customer_id: string
+  plan_id: string
+  payment_method_id: string | null
+  status: "incomplete" | "trialing" | "active" | "past_due" | "unpaid" | "paused" | "canceled" | "incomplete_expired" | "defaulted" | "completed"
+  type: "recurring" | "installment"
+  current_period_start: string | null
+  current_period_end: string | null
+  trial_end: string | null
+  canceled_at: string | null
+  cancel_at_period_end: boolean
+  created_at: string
+  updated_at: string
+
   plan_name: string
   customer_email: string
   customer_name: string
   amount: number
   currency: string
-  status: "active" | "past_due" | "canceled" | "paused"
-  interval: string
-  started_at: string
-  next_billing_date?: string
-  ended_at?: string
   card_last_four?: string
   card_brand?: string
 }
