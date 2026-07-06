@@ -21,7 +21,7 @@ interface Plan {
   trial_period_days: number | null
   installments_count: number | null
   subscription_count: number
-  total_revenue: number
+  revenue: number
   status: "active" | "archived"
   created_at: string
 }
@@ -126,7 +126,7 @@ export function PlansTable({ plans, projectId }: PlansTableProps) {
             </div>
             <div className="mt-2 flex items-center gap-3 text-[10px] text-ink-soft">
               <span className="font-mono">{plan.subscription_count} subs</span>
-              <span className="font-mono">{formatNaira(plan.total_revenue)}</span>
+              <span className="font-mono">{formatNaira(plan.revenue)}</span>
             </div>
             <div className="mt-1 flex items-center gap-3 text-[10px] text-ink-soft">
               <span className="font-semibold uppercase tracking-wider bg-paper border border-hairline px-2 py-0.5">
@@ -166,7 +166,7 @@ function PlanRow({ plan, projectId }: { plan: Plan; projectId: string }) {
         {plan.subscription_count}
       </td>
       <td className="px-4 py-3 text-xs text-ink-soft font-mono">
-        {formatNaira(plan.total_revenue)}
+        {formatNaira(plan.revenue)}
       </td>
       <td className="px-4 py-3">
         <span className="text-[10px] font-semibold uppercase tracking-wider text-ink-soft bg-paper border border-hairline px-2 py-0.5">
