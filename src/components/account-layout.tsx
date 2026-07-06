@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, type ReactNode } from "react"
 import { useAuth } from "@/lib/auth"
 import { useNavigate, Link } from "@tanstack/react-router"
+import { LogoIcon } from "@/components/icons"
 
 interface AccountLayoutProps {
   children: ReactNode
@@ -25,16 +26,22 @@ export function AccountLayout({ children, breadcrumb }: AccountLayoutProps) {
 
   return (
     <div className="flex min-h-screen flex-col bg-canvas">
-      <header className="h-14 w-full bg-canvas/80 backdrop-blur-md border-b border-hairline flex items-center justify-between px-4 md:px-8 z-30">
-        <div className="flex items-center gap-2 text-xs font-mono text-ink-soft">
+      <header className="h-16 w-full bg-canvas/80 backdrop-blur-md border-b border-zinc-800 flex items-center justify-between px-6 md:px-10 z-30">
+        <div className="flex items-center gap-2">
           {breadcrumb && breadcrumb !== "Dashboard" ? (
             <>
-              <Link to="/dashboard" className="hover:text-ink transition-colors">Dashboard</Link>
-              <span className="text-zinc-700">/</span>
-              <span className="text-ink font-semibold">{breadcrumb}</span>
+              <Link to="/dashboard" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                <LogoIcon size={22} variant="orange" />
+                <span className="text-sm font-mono font-bold text-ink tracking-tight">Orflow</span>
+              </Link>
+              <span className="text-zinc-700 text-xs">/</span>
+              <span className="text-xs font-mono text-ink font-semibold">{breadcrumb}</span>
             </>
           ) : (
-            <span className="text-ink font-semibold">Dashboard</span>
+            <Link to="/dashboard" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
+              <LogoIcon size={24} variant="orange" />
+              <span className="text-base font-mono font-bold text-ink tracking-tight">Orflow</span>
+            </Link>
           )}
         </div>
 
@@ -42,8 +49,8 @@ export function AccountLayout({ children, breadcrumb }: AccountLayoutProps) {
           <button
             type="button"
             onClick={() => setUserMenuOpen((o) => !o)}
-            className="w-7 h-7 bg-paper border border-hairline text-ink font-mono text-[10px] flex items-center justify-center cursor-pointer hover:border-hairline-strong transition-colors"
-            style={{ minHeight: 28, minWidth: 28 }}
+            className="w-8 h-8 bg-paper border border-hairline text-ink font-mono text-[11px] flex items-center justify-center cursor-pointer hover:border-hairline-strong transition-colors"
+            style={{ minHeight: 32, minWidth: 32 }}
           >
             {user?.name ? user.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase() : "OR"}
           </button>

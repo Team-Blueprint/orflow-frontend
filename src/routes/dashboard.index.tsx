@@ -178,7 +178,7 @@ function DashboardHome() {
         )}
 
         {!loading && projects.length > 0 && (
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6">
             {projects.map((project) => (
               <ProjectCard key={project.id} project={project} />
             ))}
@@ -186,7 +186,7 @@ function DashboardHome() {
         )}
 
         {/* Developer Settings / API Keys section */}
-        <section className="mt-16 pt-16 border-t border-hairline">
+        <section className="mt-20 pt-16 border-t border-zinc-800">
           <h2 className="text-xl font-bold tracking-tight text-ink">Developer Settings</h2>
           <p className="mt-1 text-sm text-ink-soft">
             Manage API credentials for your Orflow integration
@@ -233,8 +233,8 @@ function DashboardHome() {
                 const isLoading = actionLoading === keyType
 
                 return (
-                  <div key={keyType} className="border border-hairline bg-paper">
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-3 p-4">
+                  <div key={keyType} className="border border-zinc-800 bg-zinc-900/40">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3 px-5 py-4">
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-semibold text-ink">{KEY_LABELS[keyType]}</p>
                         {status === "none" && (
