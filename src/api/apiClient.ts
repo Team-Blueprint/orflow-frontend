@@ -104,7 +104,8 @@ apiClient.interceptors.response.use(
       refreshSubscribers = [];
       if (axios.isAxiosError(refreshError) && refreshError.response?.status === 401) {
         setAccessToken(null);
-        if (typeof window !== "undefined" && window.location.pathname !== "/sign-in") {
+        const publicPaths = ["/sign-in", "/sign-up", "/"];
+        if (typeof window !== "undefined" && !publicPaths.includes(window.location.pathname)) {
           window.location.href = "/sign-in";
         }
       }
