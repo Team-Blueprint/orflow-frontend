@@ -1,6 +1,7 @@
-import { useState, useRef, useEffect, type ReactNode, type ElementType } from "react";
+import { useState, useRef, useEffect, useMemo, type ReactNode, type ElementType } from "react";
 import { Link, useLocation, useNavigate, useParams } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
+import { HomeAngle } from "@solar-icons/react";
 import {
   ChartSquare,
   Refresh,
@@ -47,7 +48,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [projectOpen, setProjectOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [currentProject, setCurrentProject] = useState<Project | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
   const projectSelectorRef = useRef<HTMLDivElement>(null);
@@ -56,28 +56,33 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
   const { data: projects, isLoading: isProjectsLoading, error: projectsError } = useProjects();
 
+  const navigateRef = useRef(navigate);
   useEffect(() => {
-    if (projects?.length) {
-      if (projectId) {
-        const activeProject = projects.find(p => p.id === projectId);
-        if (activeProject) {
-          setCurrentProject(activeProject);
-          setActiveProjectId(projectId);
-        } else {
-          navigate({ to: `/dashboard/${projects[0].id}` as any });
-        }
-      } else {
-        navigate({ to: `/dashboard/${projects[0].id}` as any });
-      }
+    navigateRef.current = navigate;
+  }, [navigate]);
+
+  const currentProject = useMemo<Project | null>(() => {
+    if (!projects?.length || !projectId) return null;
+    return projects.find(p => p.id === projectId) ?? null;
+  }, [projectId, projects]);
+
+  useEffect(() => {
+    if (projectId) {
+      setActiveProjectId(projectId);
     }
-  }, [projectId, projects, navigate]);
+  }, [projectId]);
+
+  useEffect(() => {
+    if (projects?.length && projectId && !projects.find(p => p.id === projectId)) {
+      navigateRef.current({ to: `/dashboard/${projects[0].id}` as any });
+    }
+  }, [projectId, projects]);
 
   function closeSidebar() {
     setSidebarOpen(false);
   }
 
   function selectProject(p: Project) {
-    setCurrentProject(p);
     setActiveProjectId(p.id);
     setProjectOpen(false);
     navigate({ to: `/dashboard/${p.id}` as any });
@@ -260,6 +265,27 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </div>
 
         <nav className="flex-1 overflow-y-auto px-3">
+          {/* Dashboard — standalone */}
+          <Link
+            to="/dashboard"
+            onClick={closeSidebar}
+            className={cn(
+              "flex items-center gap-3 px-3 py-2 text-sm font-medium transition-colors duration-150 cursor-pointer",
+              location.pathname === "/dashboard" || location.pathname === "/dashboard/"
+                ? "bg-primary/15 text-primary"
+                : "text-ink-soft hover:text-ink hover:bg-primary/5",
+            )}
+          >
+            <HomeAngle size={18} />
+            Dashboard
+          </Link>
+
+          <div className="my-3 border-t border-hairline" />
+
+          <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-widest text-ink-soft/60 select-none">
+            {currentProject.name}
+          </p>
+
           {dynamicMainNav.map((item) =>
             item.to.startsWith("#") ? (
               <button

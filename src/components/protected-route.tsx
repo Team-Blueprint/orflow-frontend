@@ -10,7 +10,7 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
     if (!isLoading && !isAuthenticated) {
       navigate({ to: "/sign-in" })
     }
-  }, [isAuthenticated, isLoading, navigate])
+  }, [isAuthenticated, isLoading])
 
   if (isLoading) {
     return (
