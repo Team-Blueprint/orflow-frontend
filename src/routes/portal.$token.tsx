@@ -137,7 +137,7 @@ function PortalSubscriptionPage() {
 
       {/* Status Banner */}
       {needsBanner && (
-        <div className="mb-6 rounded-lg border border-destructive/30 bg-destructive/8 p-4">
+        <div className="mb-6 border border-destructive/30 bg-destructive/8 p-4">
           <div className="flex items-start gap-3">
             <Card weight="Bold" className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
             <div className="flex-1">
@@ -179,7 +179,7 @@ function PortalSubscriptionPage() {
 
       {/* Plan Summary + Payment Method */}
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="rounded-lg border border-border bg-card p-5">
+        <div className="border border-border bg-card p-5">
           <p className="text-xs font-medium uppercase tracking-tight text-muted-foreground mb-3">
             Plan
           </p>
@@ -199,7 +199,7 @@ function PortalSubscriptionPage() {
           </p>
         </div>
 
-        <div className="rounded-lg border border-border bg-card p-5">
+        <div className="border border-border bg-card p-5">
           <p className="text-xs font-medium uppercase tracking-tight text-muted-foreground mb-3">
             Payment method
           </p>
@@ -276,7 +276,7 @@ function PortalSubscriptionPage() {
 
       {/* Pause + Cancel */}
       {showActions && (
-        <div className="mt-8 rounded-lg border border-border bg-card p-5">
+        <div className="mt-8 border border-border bg-card p-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
             <Button
               variant="outline"

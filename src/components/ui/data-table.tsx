@@ -41,7 +41,7 @@ export function DataTable<T extends { id: string }>({
 
   return (
     <>
-      <div className="hidden lg:block overflow-x-auto rounded-lg border border-border">
+      <div className="hidden lg:block overflow-x-auto border border-border">
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-border bg-muted text-xs font-medium text-muted-foreground">

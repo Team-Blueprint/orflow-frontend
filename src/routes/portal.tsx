@@ -1,5 +1,7 @@
 import { useEffect } from "react";
-import { createFileRoute, Outlet } from "@tanstack/react-router";
+import { createFileRoute, Outlet, Link } from "@tanstack/react-router";
+import { LogoIcon } from "@/components/icons/logo";
+import { QuestionCircle } from "@solar-icons/react";
 
 export const Route = createFileRoute("/portal")({
   component: PortalLayout,
@@ -18,22 +20,33 @@ function PortalLayout() {
 
   return (
     <div className="flex min-h-dvh flex-col bg-background">
-      <header className="flex h-14 items-center justify-between border-b border-border px-6">
-        <span className="text-sm font-semibold tracking-tight text-foreground">
-          Orflow
-        </span>
-        <a
-          href="mailto:hi@orflow.io"
-          className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-        >
-          Need help?
-        </a>
+      <header className="flex h-20 items-center border-b border-border">
+        <div className="mx-auto flex w-full max-w-4xl items-center justify-between px-4 md:px-6">
+          <div className="flex items-center gap-2">
+            <LogoIcon size={20} variant="orange" />
+            <span className="text-sm font-semibold tracking-tight text-foreground">
+              Orflow
+            </span>
+          </div>
+          <a
+            href="mailto:hi@orflow.io"
+            className="flex items-center text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Need help?
+            <QuestionCircle weight="Linear" className="ml-2 h-4 w-4" />
+          </a>
+        </div>
       </header>
       <main className="flex-1">
         <Outlet />
       </main>
       <footer className="py-6 text-center">
-        <p className="text-xs text-muted-foreground">Powered by Orflow</p>
+        <Link
+          to="/"
+          className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+        >
+          Powered by Orflow
+        </Link>
       </footer>
     </div>
   );
