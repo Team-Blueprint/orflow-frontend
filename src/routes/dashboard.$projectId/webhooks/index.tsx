@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import {
   useWebhookEvents,
   useWebhookEndpoints,
@@ -9,7 +10,14 @@ import {
 } from "@/api/hooks/useWebhooks";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { MenuDots } from "@solar-icons/react";
 import { cn } from "@/lib/utils";
 import { WebhookFilters, WebhookEventTable, WebhookSkeleton } from "@/components/webhooks";
 import type { OutboundWebhookEventRead } from "@/api/types/webhooks";
@@ -25,8 +33,9 @@ function WebhooksPage() {
   const { projectId } = Route.useParams();
   const queryClient = useQueryClient();
   const toast = useToast();
+  useDocumentTitle("Webhooks | Orflow");
 
-  const { data: webhookEndpoints, isLoading: isEndpointsLoading, refetch: refetchEndpoints } = useWebhookEndpoints(projectId);
+  const { data: webhookEndpoints, isLoading: isEndpointsLoading } = useWebhookEndpoints(projectId);
 
   const [isConfigExpanded, setIsConfigExpanded] = useState(true);
   const [eventTypeFilter, setEventTypeFilter] = useState("");
@@ -85,7 +94,11 @@ function WebhooksPage() {
     if (currentWebhookConfig) {
       setWebhookUrl(currentWebhookConfig.url);
     }
-  }, [currentWebhookConfig]);
+  }, [currentWebhookConfig, projectId]);
+
+  const hasUrlChanged = currentWebhookConfig
+    ? webhookUrl !== currentWebhookConfig.url
+    : webhookUrl.trim().length > 0;
 
   async function handleCreateOrUpdateWebhook(e: React.FormEvent) {
     e.preventDefault();
@@ -99,7 +112,6 @@ function WebhooksPage() {
         await createEndpointMutation.mutateAsync({ url: webhookUrl });
       }
       toast.success("Webhook configuration saved");
-      refetchEndpoints();
     } catch {
       toast.error("Failed to save webhook configuration");
     }
@@ -111,7 +123,6 @@ function WebhooksPage() {
       await deleteEndpointMutation.mutateAsync(currentWebhookConfig.id);
       await createEndpointMutation.mutateAsync({ url: currentWebhookConfig.url });
       toast.success("Webhook configuration saved");
-      refetchEndpoints();
     } catch {
       toast.error("Failed to regenerate webhook secret");
     }
@@ -148,27 +159,56 @@ function WebhooksPage() {
   return (
     <div className="flex flex-col gap-5 sm:gap-6 p-4 sm:px-8 sm:pt-4 sm:pb-8">
       <div className="border border-hairline bg-paper p-6 shadow-soft-lift">
-        <button
-          type="button"
-          onClick={() => setIsConfigExpanded(!isConfigExpanded)}
-          className="flex w-full items-center justify-between cursor-pointer"
-        >
-          <h2 className="text-xl font-semibold tracking-tight text-ink">Webhook Configuration</h2>
-          <svg
-            width={20}
-            height={20}
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            className={cn(
-              "text-ink-soft transition-transform duration-150",
-              isConfigExpanded ? "rotate-180" : "",
-            )}
+        <div className="flex items-center justify-between">
+          <button
+            type="button"
+            onClick={() => setIsConfigExpanded(!isConfigExpanded)}
+            className="flex items-center gap-2 cursor-pointer"
           >
-            <path d="M6 9l6 6 6-6" />
-          </svg>
-        </button>
+            <svg
+              width={20}
+              height={20}
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              className={cn(
+                "text-ink-soft transition-transform duration-150",
+                isConfigExpanded ? "rotate-180" : "",
+              )}
+            >
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+            <h2 className="text-xl font-semibold tracking-tight text-ink">Webhook Configuration</h2>
+          </button>
+
+          {currentWebhookConfig && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="flex items-center justify-center size-8 rounded hover:bg-midnight-soft transition-colors duration-150 cursor-pointer"
+                >
+                  <MenuDots className="size-5 text-ink-soft" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onSelect={handleRegenerateSecret}
+                  disabled={createEndpointMutation.isPending || deleteEndpointMutation.isPending}
+                >
+                  Regenerate Secret
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onSelect={() => setDeleteConfirmOpen(true)}
+                  className="text-red-500 focus:text-red-400 focus:bg-red-500/10"
+                >
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
 
         {isConfigExpanded && (
           <div className="mt-6 space-y-6">
@@ -214,9 +254,10 @@ function WebhooksPage() {
                   </span>
                 </div>
 
-                <div className="flex items-center justify-end gap-3 pt-4 border-t border-hairline">
+                <div className="flex items-center justify-end gap-2 pt-4 border-t border-hairline">
                   <Button
-                    variant="outline"
+                    type="button"
+                    variant="ghost"
                     size="sm"
                     className="text-xs"
                     onClick={handleTestPing}
@@ -225,28 +266,10 @@ function WebhooksPage() {
                     Test Ping
                   </Button>
                   <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-xs text-red-500 hover:text-red-400 border-red-900/50 hover:border-red-700"
-                    onClick={() => setDeleteConfirmOpen(true)}
-                    disabled={deleteEndpointMutation.isPending}
-                  >
-                    Delete
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-xs"
-                    onClick={handleRegenerateSecret}
-                    disabled={createEndpointMutation.isPending || deleteEndpointMutation.isPending}
-                  >
-                    Regenerate Secret
-                  </Button>
-                  <Button
                     type="submit"
                     className="bg-primary text-white hover:bg-primary-hover text-xs px-4 py-1.5"
                     size="sm"
-                    disabled={createEndpointMutation.isPending || deleteEndpointMutation.isPending}
+                    disabled={!hasUrlChanged || createEndpointMutation.isPending || deleteEndpointMutation.isPending}
                   >
                     {createEndpointMutation.isPending ? "Saving..." : "Save URL"}
                   </Button>
@@ -270,7 +293,7 @@ function WebhooksPage() {
                     type="submit"
                     className="bg-primary text-white hover:bg-primary-hover text-xs px-4 py-1.5"
                     size="sm"
-                    disabled={createEndpointMutation.isPending}
+                    disabled={!webhookUrl.trim() || createEndpointMutation.isPending}
                   >
                     {createEndpointMutation.isPending ? "Creating..." : "Create Webhook"}
                   </Button>
