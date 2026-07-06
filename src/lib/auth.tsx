@@ -48,6 +48,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data } = await apiClient.post<{ tenant: Tenant; access_token: string }>("/v1/auth/signin", { email, password })
     setUser(data.tenant)
     setAccessToken(data.access_token)
+
+    try {
+      const keyRes = await apiClient.get<{ sk_test: string | null }>("/v1/auth/keys/new")
+      if (keyRes.data.sk_test) {
+        localStorage.setItem(LS_API_KEY, keyRes.data.sk_test)
+      }
+    } catch {
+      // Key fetch failed - user can get keys later from Developer Settings
+    }
   }, [])
 
   const signup = useCallback(async (name: string, email: string, password: string) => {
@@ -65,9 +74,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const logout = useCallback(async () => {
-    await apiClient.post("/v1/auth/logout")
+    try {
+      await apiClient.post("/v1/auth/logout")
+    } catch {
+      // Server session invalidation is best-effort. Always clear local state.
+    }
     setUser(null)
     setAccessToken(null)
+    localStorage.removeItem(LS_API_KEY)
   }, [])
 
   return (
