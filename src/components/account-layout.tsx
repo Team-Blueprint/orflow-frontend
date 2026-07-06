@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, type ReactNode } from "react"
 import { useAuth } from "@/lib/auth"
-import { useNavigate, Link } from "@tanstack/react-router"
+import { useNavigate } from "@tanstack/react-router"
 import { LogoIcon } from "@/components/icons"
 
 interface AccountLayoutProps {
@@ -26,22 +26,22 @@ export function AccountLayout({ children, breadcrumb }: AccountLayoutProps) {
 
   return (
     <div className="flex min-h-screen flex-col bg-canvas">
-      <header className="h-16 w-full bg-canvas/80 backdrop-blur-md border-b border-zinc-800 flex items-center justify-between px-6 md:px-10 z-30">
+      <header className="h-16 w-full bg-canvas/80 backdrop-blur-md border-b border-zinc-800 flex items-center justify-between px-6 md:px-10 z-50">
         <div className="flex items-center gap-2">
           {breadcrumb && breadcrumb !== "Dashboard" ? (
             <>
-              <Link to="/dashboard" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+              <a href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                 <LogoIcon size={22} variant="orange" />
                 <span className="text-sm font-mono font-bold text-ink tracking-tight">Orflow</span>
-              </Link>
+              </a>
               <span className="text-zinc-700 text-xs">/</span>
               <span className="text-xs font-mono text-ink font-semibold">{breadcrumb}</span>
             </>
           ) : (
-            <Link to="/dashboard" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
+            <a href="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
               <LogoIcon size={24} variant="orange" />
               <span className="text-base font-mono font-bold text-ink tracking-tight">Orflow</span>
-            </Link>
+            </a>
           )}
         </div>
 

@@ -141,7 +141,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
   return (
     <div className="flex h-screen overflow-hidden bg-canvas">
-      <div className="fixed inset-x-0 top-0 z-30 flex h-14 items-center justify-between border-b border-hairline bg-paper px-4 md:hidden">
+      <div className="fixed inset-x-0 top-0 z-[60] flex h-16 items-center justify-between border-b border-zinc-800 bg-canvas/80 backdrop-blur-md px-4 md:hidden">
         <div className="flex items-center gap-3">
           <button
             type="button"
@@ -154,15 +154,18 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               <path d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-          <span className="text-base font-semibold tracking-tight text-ink">Orflow</span>
+          <a href="/" className="flex items-center gap-2 text-sm font-mono font-bold tracking-tight text-ink cursor-pointer">
+            <LogoIcon size={18} variant="orange" />
+            Orflow
+          </a>
         </div>
 
         <div ref={userMenuRef} className="relative">
           <button
             type="button"
             onClick={() => setUserMenuOpen((o) => !o)}
-            className="w-7 h-7 bg-paper border border-hairline text-ink font-mono text-[10px] flex items-center justify-center cursor-pointer hover:border-hairline-strong transition-colors"
-            style={{ minHeight: 28, minWidth: 28 }}
+            className="w-8 h-8 bg-paper border border-hairline text-ink font-mono text-[11px] flex items-center justify-center cursor-pointer hover:border-hairline-strong transition-colors"
+            style={{ minHeight: 32, minWidth: 32 }}
           >
             {user?.name ? user.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase() : "OR"}
           </button>
@@ -191,26 +194,40 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/60 md:hidden"
+          className="fixed inset-0 z-[65] bg-black/60 md:hidden"
           onClick={closeSidebar}
         />
       )}
 
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-hairline bg-paper transition-transform duration-200",
+          "fixed inset-y-0 left-0 z-[70] flex w-64 flex-col border-r border-hairline bg-canvas transition-transform duration-200",
           "md:translate-x-0",
           sidebarOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
-        <a
-          href="/"
-          onClick={closeSidebar}
-          className="flex items-center gap-2 px-5 py-4 cursor-pointer"
-        >
-          <LogoIcon size={20} variant="orange" />
-          <span className="text-base font-semibold tracking-tight text-ink">Orflow</span>
-        </a>
+        <div className="flex items-center justify-between px-5 py-4">
+          <a
+            href="/"
+            onClick={closeSidebar}
+            className="flex items-center gap-2 cursor-pointer"
+          >
+            <LogoIcon size={20} variant="orange" />
+            <span className="text-base font-semibold tracking-tight text-ink">Orflow</span>
+          </a>
+          <button
+            type="button"
+            onClick={closeSidebar}
+            className="md:hidden text-ink-soft hover:text-ink transition-colors cursor-pointer"
+            style={{ minHeight: 44, minWidth: 44 }}
+            aria-label="Close sidebar"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 6L6 18" />
+              <path d="M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
 
         <div className="relative px-3 pb-4" ref={projectSelectorRef}>
           <button
@@ -228,7 +245,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </button>
 
           {projectOpen && (
-            <div className="absolute left-3 right-3 top-full z-50 mt-1 border border-hairline bg-paper shadow-soft-lift">
+            <div className="absolute left-3 right-3 top-full z-50 mt-0 border border-hairline bg-paper shadow-soft-lift">
               <div className="py-1">
                 {projects.map((p) => (
                   <button
@@ -272,7 +289,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             className={cn(
               "flex items-center gap-3 px-3 py-2 text-sm font-medium transition-colors duration-150 cursor-pointer",
               location.pathname === "/dashboard" || location.pathname === "/dashboard/"
-                ? "bg-primary/15 text-primary"
+                ? "bg-primary/60 text-white"
                 : "text-ink-soft hover:text-ink hover:bg-primary/5",
             )}
           >
@@ -304,7 +321,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 className={cn(
                   "flex items-center gap-3 px-3 py-2 text-sm font-medium transition-colors duration-150 cursor-pointer",
                   isActiveRoute(item.to)
-                    ? "bg-primary/15 text-primary"
+                    ? "bg-primary/60 text-white"
                     : "text-ink-soft hover:text-ink hover:bg-primary/5",
                 )}
               >
@@ -323,9 +340,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               onClick={closeSidebar}
               className={cn(
                 "flex items-center gap-3 px-3 py-2 text-sm font-medium transition-colors duration-150 cursor-pointer",
-                isActiveRoute(item.to)
-                  ? "bg-primary/15 text-primary"
-                  : "text-ink-soft hover:text-ink hover:bg-primary/5",
+                  isActiveRoute(item.to)
+                    ? "bg-primary/60 text-white"
+                    : "text-ink-soft hover:text-ink hover:bg-primary/5",
               )}
             >
               <item.icon size={18} />
@@ -338,7 +355,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       <div className="flex-1 flex flex-col min-w-0 md:ml-64 pt-14 md:pt-0">
         <header className="h-14 w-full bg-canvas/80 backdrop-blur-md border-b border-hairline hidden md:flex items-center justify-between px-4 md:px-8 shrink-0">
           <div className="flex items-center gap-2 text-xs font-mono text-ink-soft">
-            <Link to="/dashboard" className="hover:text-ink transition-colors cursor-pointer">Dashboard</Link>
+            <Link to="/dashboard" className="flex items-center gap-2 hover:text-ink transition-colors cursor-pointer">
+              <LogoIcon size={16} variant="orange" />
+              <span>Dashboard</span>
+            </Link>
             <span className="text-zinc-700">/</span>
             <Link to={`/dashboard/${currentProject.id}` as any} className="text-ink font-semibold hover:text-primary transition-colors cursor-pointer">
               {currentProject.name}

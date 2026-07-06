@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from "react"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { AccountLayout } from "@/components/account-layout"
-import { apiClient } from "@/api/apiClient"
+import { apiClient, setActiveProjectId } from "@/api/apiClient"
 import { AxiosError } from "axios"
 
 export const Route = createFileRoute("/dashboard/new")({
@@ -21,6 +21,7 @@ function NewProject() {
     setIsCreating(true)
     try {
       const { data } = await apiClient.post("/v1/projects/create", { name, description })
+      setActiveProjectId(data.id)
       navigate({ to: "/dashboard/$projectId", params: { projectId: data.id } })
     } catch (err) {
       if (err instanceof AxiosError && err.response?.data?.error?.message) {
