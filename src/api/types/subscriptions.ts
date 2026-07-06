@@ -14,11 +14,10 @@ export interface Subscription {
   created_at: string
   updated_at: string
 
-  plan_name: string
-  customer_email: string
-  customer_name: string
-  amount: number
-  currency: string
-  card_last_four?: string
-  card_brand?: string
+  plan_name?: string
+  customer_email?: string
+  customer_name?: string
+  amount?: number
+  currency?: string
+  plan?: { name: string; amount: number; currency: string }
 }

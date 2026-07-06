@@ -114,12 +114,28 @@ export function useResumePortalSubscription(token: string) {
   });
 }
 
+const MOCK_SUBSCRIBE_PAGE: SubscriptionPageData = {
+  code: "starter-monthly",
+  plan: {
+    id: "plan_mock_01",
+    projectId: "proj_mock",
+    name: "Starter Monthly",
+    description: "Essential features for small teams.",
+    amount: 29900,
+    currency: "NGN",
+    interval: "monthly",
+  },
+  merchant: {
+    name: "Acme Corp",
+  },
+};
+
 export function useSubscriptionPage(code: string) {
   return useQuery({
     queryKey: queryKeys.subscriptionPage.byCode(code),
     queryFn: async (): Promise<SubscriptionPageData | null> => {
       await delay();
-      return null;
+      return code === "starter-monthly" ? MOCK_SUBSCRIBE_PAGE : null;
     },
   });
 }

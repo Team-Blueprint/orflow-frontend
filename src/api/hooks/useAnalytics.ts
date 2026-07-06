@@ -22,7 +22,7 @@ function generateMockData(days: number): AnalyticsResponse {
     const d = new Date(now)
     d.setDate(d.getDate() - i)
     const dateStr = d.toISOString().slice(0, 10)
-    const revenue = Math.round(800_000 + rng() * 1_700_000)
+    const revenue = Math.round(8000 + rng() * 17000)
     const volume = Math.round(30 + rng() * 60)
     chart.push({ date: dateStr, revenue, volume })
   }
@@ -52,16 +52,11 @@ export const ZEROED_ANALYTICS: AnalyticsResponse = {
   revenue_chart: [],
 }
 
-function delay(ms = 200) {
-  return new Promise((r) => setTimeout(r, ms))
-}
-
 export function useAnalytics(projectId: string, days = 30) {
   return useQuery({
     queryKey: ["analytics", projectId, days],
     queryFn: async () => {
       if (IS_MOCK_MODE) {
-        await delay()
         return generateMockData(days)
       }
       const response = await apiClient.get<AnalyticsResponse>(
