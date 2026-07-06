@@ -1,5 +1,7 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { PortalData, SubscriptionPageData, BillingRecord } from "./portal-data";
+import { useQuery, useMutation } from "@tanstack/react-query"
+import { apiClient } from "@/api/apiClient"
+import type { PortalData, SubscriptionPageData, BillingRecord } from "./portal-data"
+import type { PublicPageInfo, PublicCheckoutResponse } from "@/api/types/subscription-pages"
 
 export const queryKeys = {
   portal: {
@@ -9,10 +11,10 @@ export const queryKeys = {
   subscriptionPage: {
     byCode: (code: string) => ["subscriptionPage", code] as const,
   },
-};
+}
 
 function delay(ms = 150) {
-  return new Promise((r) => setTimeout(r, ms));
+  return new Promise((r) => setTimeout(r, ms))
 }
 
 const MOCK_PORTAL: PortalData = {
@@ -50,111 +52,102 @@ const MOCK_PORTAL: PortalData = {
     { id: "br_02", subscriptionId: "sub_mock_01", amount: 29900, status: "paid", date: new Date(Date.now() - 60 * 86400000).toISOString() },
     { id: "br_03", subscriptionId: "sub_mock_01", amount: 29900, status: "paid", date: new Date(Date.now() - 90 * 86400000).toISOString() },
   ],
-};
+}
 
 export function usePortalSubscription(token: string) {
   return useQuery({
     queryKey: queryKeys.portal.subscription(token),
     queryFn: async (): Promise<PortalData | null> => {
-      await delay();
-      return MOCK_PORTAL;
+      await delay()
+      return MOCK_PORTAL
     },
-  });
+  })
 }
 
-export function useUpdatePortalCard(token: string) {
-  const qc = useQueryClient();
+export function useUpdatePortalCard(_token: string) {
   return useMutation({
     mutationFn: async (input: { brand: string; last4: string }) => {
-      await delay(300);
-      return { brand: input.brand, last4: input.last4 };
+      await delay(300)
+      return { brand: input.brand, last4: input.last4 }
     },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.portal.subscription(token) });
-    },
-  });
+  })
 }
 
-export function useCancelPortalSubscription(token: string) {
-  const qc = useQueryClient();
+export function useCancelPortalSubscription(_token: string) {
   return useMutation({
     mutationFn: async () => {
-      await delay(300);
-      return true;
+      await delay(300)
+      return true
     },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.portal.subscription(token) });
-    },
-  });
+  })
 }
 
-export function usePausePortalSubscription(token: string) {
-  const qc = useQueryClient();
+export function usePausePortalSubscription(_token: string) {
   return useMutation({
     mutationFn: async () => {
-      await delay(300);
-      return true;
+      await delay(300)
+      return true
     },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.portal.subscription(token) });
-    },
-  });
+  })
 }
 
-export function useResumePortalSubscription(token: string) {
-  const qc = useQueryClient();
+export function useResumePortalSubscription(_token: string) {
   return useMutation({
     mutationFn: async () => {
-      await delay(300);
-      return true;
+      await delay(300)
+      return true
     },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.portal.subscription(token) });
-    },
-  });
+  })
 }
 
-const MOCK_SUBSCRIBE_PAGE: SubscriptionPageData = {
-  code: "starter-monthly",
-  plan: {
-    id: "plan_mock_01",
-    projectId: "proj_mock",
-    name: "Starter Monthly",
-    description: "Essential features for small teams.",
-    amount: 29900,
-    currency: "NGN",
-    interval: "monthly",
-  },
-  merchant: {
-    name: "Acme Corp",
-  },
-};
+function mapPublicPageInfo(raw: PublicPageInfo): SubscriptionPageData {
+  return {
+    code: raw.id,
+    plan: {
+      id: raw.plan_id,
+      projectId: "",
+      name: raw.name,
+      description: "",
+      amount: raw.amount * 100,
+      currency: raw.currency,
+      interval: raw.interval,
+    },
+    merchant: {
+      name: raw.merchant_name,
+    },
+  }
+}
 
 export function useSubscriptionPage(code: string) {
   return useQuery({
     queryKey: queryKeys.subscriptionPage.byCode(code),
     queryFn: async (): Promise<SubscriptionPageData | null> => {
-      await delay();
-      return code === "starter-monthly" ? MOCK_SUBSCRIBE_PAGE : null;
+      const res = await apiClient.get<PublicPageInfo>(
+        `/v1/subscription-pages/code/${code}`,
+      )
+      return mapPublicPageInfo(res.data)
     },
-  });
+  })
 }
 
-export function useCreatePortalSubscription() {
+export function useCreatePortalSubscription(code: string) {
   return useMutation({
-    mutationFn: async (_input: { planId: string; name: string; email: string }) => {
-      await delay(500);
-      return { checkoutLink: "https://nomba-checkout.example.com/checkout", orderReference: `ref_${Date.now()}` };
+    mutationFn: async (input: { name: string; email: string }) => {
+      const res = await apiClient.post<PublicCheckoutResponse>(
+        `/v1/subscription-pages/code/${code}/checkout`,
+        { name: input.name, email: input.email },
+      )
+      return { checkoutLink: res.data.checkout_link, orderReference: res.data.order_reference }
     },
-  });
+  })
 }
 
 export function usePortalBillingHistory(token: string) {
   return useQuery({
     queryKey: queryKeys.portal.invoices(token),
     queryFn: async (): Promise<BillingRecord[]> => {
-      await delay();
-      return MOCK_PORTAL.billing;
+      await delay()
+      return MOCK_PORTAL.billing
     },
-  });
+  })
 }

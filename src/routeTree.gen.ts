@@ -28,6 +28,7 @@ import { Route as DashboardProjectIdSubscriptionsRouteImport } from './routes/da
 import { Route as DashboardProjectIdSettingsRouteImport } from './routes/dashboard.$projectId.settings'
 import { Route as DashboardProjectIdPlansRouteImport } from './routes/dashboard.$projectId.plans'
 import { Route as DashboardProjectIdCustomersRouteImport } from './routes/dashboard.$projectId.customers'
+import { Route as AuthGoogleCallbackRouteImport } from './routes/auth.google.callback'
 import { Route as DashboardProjectIdWebhooksIndexRouteImport } from './routes/dashboard.$projectId/webhooks/index'
 import { Route as DashboardProjectIdPlansIndexRouteImport } from './routes/dashboard.$projectId.plans.index'
 import { Route as DashboardProjectIdPlansPlanIdRouteImport } from './routes/dashboard.$projectId.plans.$planId'
@@ -130,6 +131,11 @@ const DashboardProjectIdCustomersRoute =
     path: '/customers',
     getParentRoute: () => DashboardProjectIdRoute,
   } as any)
+const AuthGoogleCallbackRoute = AuthGoogleCallbackRouteImport.update({
+  id: '/auth/google/callback',
+  path: '/auth/google/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardProjectIdWebhooksIndexRoute =
   DashboardProjectIdWebhooksIndexRouteImport.update({
     id: '/webhooks/',
@@ -164,6 +170,7 @@ export interface FileRoutesByFullPath {
   '/subscribe/$code': typeof SubscribeCodeRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/portal/': typeof PortalIndexRoute
+  '/auth/google/callback': typeof AuthGoogleCallbackRoute
   '/dashboard/$projectId/customers': typeof DashboardProjectIdCustomersRoute
   '/dashboard/$projectId/plans': typeof DashboardProjectIdPlansRouteWithChildren
   '/dashboard/$projectId/settings': typeof DashboardProjectIdSettingsRoute
@@ -185,6 +192,7 @@ export interface FileRoutesByTo {
   '/subscribe/$code': typeof SubscribeCodeRoute
   '/dashboard': typeof DashboardIndexRoute
   '/portal': typeof PortalIndexRoute
+  '/auth/google/callback': typeof AuthGoogleCallbackRoute
   '/dashboard/$projectId/customers': typeof DashboardProjectIdCustomersRoute
   '/dashboard/$projectId/settings': typeof DashboardProjectIdSettingsRoute
   '/dashboard/$projectId/subscriptions': typeof DashboardProjectIdSubscriptionsRoute
@@ -209,6 +217,7 @@ export interface FileRoutesById {
   '/subscribe/$code': typeof SubscribeCodeRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/portal/': typeof PortalIndexRoute
+  '/auth/google/callback': typeof AuthGoogleCallbackRoute
   '/dashboard/$projectId/customers': typeof DashboardProjectIdCustomersRoute
   '/dashboard/$projectId/plans': typeof DashboardProjectIdPlansRouteWithChildren
   '/dashboard/$projectId/settings': typeof DashboardProjectIdSettingsRoute
@@ -235,6 +244,7 @@ export interface FileRouteTypes {
     | '/subscribe/$code'
     | '/dashboard/'
     | '/portal/'
+    | '/auth/google/callback'
     | '/dashboard/$projectId/customers'
     | '/dashboard/$projectId/plans'
     | '/dashboard/$projectId/settings'
@@ -256,6 +266,7 @@ export interface FileRouteTypes {
     | '/subscribe/$code'
     | '/dashboard'
     | '/portal'
+    | '/auth/google/callback'
     | '/dashboard/$projectId/customers'
     | '/dashboard/$projectId/settings'
     | '/dashboard/$projectId/subscriptions'
@@ -279,6 +290,7 @@ export interface FileRouteTypes {
     | '/subscribe/$code'
     | '/dashboard/'
     | '/portal/'
+    | '/auth/google/callback'
     | '/dashboard/$projectId/customers'
     | '/dashboard/$projectId/plans'
     | '/dashboard/$projectId/settings'
@@ -297,6 +309,7 @@ export interface RootRouteChildren {
   SignInRoute: typeof SignInRoute
   SignUpRoute: typeof SignUpRoute
   SubscribeRoute: typeof SubscribeRouteWithChildren
+  AuthGoogleCallbackRoute: typeof AuthGoogleCallbackRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -434,6 +447,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardProjectIdCustomersRouteImport
       parentRoute: typeof DashboardProjectIdRoute
     }
+    '/auth/google/callback': {
+      id: '/auth/google/callback'
+      path: '/auth/google/callback'
+      fullPath: '/auth/google/callback'
+      preLoaderRoute: typeof AuthGoogleCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard/$projectId/webhooks/': {
       id: '/dashboard/$projectId/webhooks/'
       path: '/webhooks'
@@ -546,6 +566,7 @@ const rootRouteChildren: RootRouteChildren = {
   SignInRoute: SignInRoute,
   SignUpRoute: SignUpRoute,
   SubscribeRoute: SubscribeRouteWithChildren,
+  AuthGoogleCallbackRoute: AuthGoogleCallbackRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

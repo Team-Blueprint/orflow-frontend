@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from "@tanstack/react-router"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { apiClient } from "@/api/apiClient"
 import { ENDPOINTS } from "@/api/ENDPOINTS"
-import { usePaymentLink, useGeneratePaymentLink, useRegeneratePaymentLink } from "@/api/hooks/usePaymentLinks"
+import { useSubscriptionPages, useCreateSubscriptionPage, useDeleteSubscriptionPage, useUpdateSubscriptionPage } from "@/api/hooks/useSubscriptionPages"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { PlanDetailSkeleton } from "@/components/skeletons/plan-detail-skeleton"
@@ -57,14 +57,17 @@ export function PlanDetailPage() {
     enabled: !!planId,
   })
 
-  const { data: paymentLink, isLoading: isPaymentLinkLoading } = usePaymentLink(projectId, planId)
-  const generatePaymentLink = useGeneratePaymentLink(projectId, planId)
-  const regeneratePaymentLink = useRegeneratePaymentLink(projectId, planId)
+  const { data: pages = [], isLoading: isPagesLoading } = useSubscriptionPages(projectId)
+  const createPage = useCreateSubscriptionPage(projectId)
+  const deletePage = useDeleteSubscriptionPage(projectId)
+  const togglePage = useUpdateSubscriptionPage(projectId)
+
+  const planPages = pages.filter(p => p.plan_id === planId)
 
   const [name, setName] = useState("")
   const [trialPeriodDays, setTrialPeriodDays] = useState<string>("")
   const [installmentsCount, setInstallmentsCount] = useState<string>("")
-  const [copied, setCopied] = useState(false)
+  const [copiedId, setCopiedId] = useState<string | null>(null)
 
   useEffect(() => {
     if (plan) {
@@ -75,11 +78,11 @@ export function PlanDetailPage() {
   }, [plan])
 
   useEffect(() => {
-    if (copied) {
-      const t = setTimeout(() => setCopied(false), 2000)
+    if (copiedId) {
+      const t = setTimeout(() => setCopiedId(null), 2000)
       return () => clearTimeout(t)
     }
-  }, [copied])
+  }, [copiedId])
 
   const updateMutation = useMutation({
     mutationFn: (data: Partial<Plan>) => apiClient.patch(ENDPOINTS.PLANS.UPDATE(planId), data),
@@ -105,25 +108,30 @@ export function PlanDetailPage() {
     })
   }
 
-  const handleGenerate = () => {
-    generatePaymentLink.mutate(undefined, {
-      onSuccess: () => toast.success("Payment link generated successfully"),
-      onError: () => toast.error("Failed to generate payment link"),
+  const handleCreatePage = () => {
+    createPage.mutate({ plan_id: planId }, {
+      onSuccess: () => toast.success("Subscription page created"),
+      onError: () => toast.error("Failed to create subscription page"),
     })
   }
 
-  const handleRegenerate = () => {
-    regeneratePaymentLink.mutate(undefined, {
-      onSuccess: () => toast.success("Payment link regenerated successfully"),
-      onError: () => toast.error("Failed to regenerate payment link"),
+  const handleTogglePage = (pageId: string, isActive: boolean) => {
+    togglePage.mutate({ pageId, is_active: !isActive }, {
+      onSuccess: () => toast.success(isActive ? "Page deactivated" : "Page activated"),
+      onError: () => toast.error("Failed to update page"),
     })
   }
 
-  const handleCopy = async () => {
-    if (paymentLink) {
-      await navigator.clipboard.writeText(paymentLink.url)
-      setCopied(true)
-    }
+  const handleDeletePage = (pageId: string) => {
+    deletePage.mutate(pageId, {
+      onSuccess: () => toast.success("Subscription page deleted"),
+      onError: () => toast.error("Failed to delete page"),
+    })
+  }
+
+  const handleCopyUrl = async (url: string, id: string) => {
+    await navigator.clipboard.writeText(`${window.location.origin}${url}`)
+    setCopiedId(id)
   }
 
   if (isPlanLoading) {
@@ -356,43 +364,60 @@ export function PlanDetailPage() {
               )}
             </div>
 
-            {/* Payment Link Widget */}
+            {/* Subscription Pages Widget */}
             <div className="border border-hairline bg-paper p-5">
-              <h3 className="text-sm font-semibold text-ink mb-4">Payment Link</h3>
-              {isPaymentLinkLoading ? (
+              <h3 className="text-sm font-semibold text-ink mb-4">Subscription Pages</h3>
+              {isPagesLoading ? (
                 <div className="h-10 bg-zinc-800 animate-pulse" />
-              ) : paymentLink ? (
+              ) : planPages.length > 0 ? (
                 <div className="flex flex-col gap-3">
-                  <div className="flex items-center gap-2 bg-midnight-soft border border-hairline px-3 py-2">
-                    <code className="flex-1 font-mono text-xs text-ink-soft truncate">
-                      {paymentLink.url}
-                    </code>
-                    <button
-                      onClick={handleCopy}
-                      className="shrink-0 text-xs font-medium text-primary hover:text-primary-hover transition-colors cursor-pointer"
-                    >
-                      {copied ? "Copied!" : "Copy"}
-                    </button>
-                  </div>
-                  <button
-                    onClick={handleRegenerate}
-                    disabled={regeneratePaymentLink.isPending}
-                    className="self-start text-xs font-medium text-ink-soft hover:text-ink border border-hairline px-4 py-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                  >
-                    {regeneratePaymentLink.isPending ? "Regenerating..." : "Regenerate"}
-                  </button>
+                  {planPages.map(p => (
+                    <div key={p.id} className="border border-hairline bg-midnight-soft p-3">
+                      <div className="flex items-center justify-between gap-2 mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className={`size-2 rounded-full ${p.is_active ? "bg-green-500" : "bg-zinc-500"}`} />
+                          <span className="text-xs font-medium text-ink">{p.is_active ? "Active" : "Inactive"}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleTogglePage(p.id, p.is_active)}
+                            className="text-[10px] font-medium text-ink-soft hover:text-ink border border-hairline px-2 py-1 transition-colors cursor-pointer"
+                          >
+                            {p.is_active ? "Deactivate" : "Activate"}
+                          </button>
+                          <button
+                            onClick={() => handleDeletePage(p.id)}
+                            className="text-[10px] font-medium text-red-400 hover:text-red-300 border border-red-900/50 px-2 py-1 transition-colors cursor-pointer"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 bg-canvas border border-hairline px-2.5 py-1.5">
+                        <code className="flex-1 font-mono text-[11px] text-ink-soft truncate">
+                          {`${window.location.origin}${p.url}`}
+                        </code>
+                        <button
+                          onClick={() => handleCopyUrl(p.url, p.id)}
+                          className="shrink-0 text-[10px] font-medium text-primary hover:text-primary-hover transition-colors cursor-pointer"
+                        >
+                          {copiedId === p.id ? "Copied!" : "Copy"}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ) : (
                 <div>
                   <p className="text-xs text-ink-soft mb-4">
-                    No payment link generated yet. Create one to start accepting payments for this plan.
+                    Create a shareable subscription page to let customers subscribe to this plan.
                   </p>
                   <button
-                    onClick={handleGenerate}
-                    disabled={generatePaymentLink.isPending}
+                    onClick={handleCreatePage}
+                    disabled={createPage.isPending}
                     className="bg-primary text-white hover:bg-primary-hover text-xs font-bold px-4 py-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                   >
-                    {generatePaymentLink.isPending ? "Generating..." : "Generate Payment Link"}
+                    {createPage.isPending ? "Creating..." : "Create Subscription Page"}
                   </button>
                 </div>
               )}

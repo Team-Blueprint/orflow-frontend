@@ -9,14 +9,6 @@ declare module "axios" {
 const LS_API_KEY = "orflow_api_key";
 export { LS_API_KEY };
 const LS_ACTIVE_PROJECT = "orflow_active_project_id";
-const SS_ACCESS_TOKEN = "orflow_access_token";
-
-function restoreAccessToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return sessionStorage.getItem(SS_ACCESS_TOKEN);
-}
-
-let _accessToken: string | null = restoreAccessToken();
 
 export const BASE_URL =
   import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
@@ -34,37 +26,30 @@ export const apiClient = axios.create({
 apiClient.interceptors.request.use((config) => {
   if (typeof window === "undefined") return config;
 
-  const token = _accessToken || restoreAccessToken();
-  if (token) {
-    config.headers.set("Authorization", `Bearer ${token}`);
-  }
-
   const apiKey = localStorage.getItem(LS_API_KEY);
   if (apiKey) config.headers.set("X-API-Key", apiKey);
 
   const projectId = localStorage.getItem(LS_ACTIVE_PROJECT);
   if (projectId) config.headers.set("X-Project-Id", projectId);
 
-  if (!token) {
-    const csrfToken = getCsrfToken();
-    if (
-      csrfToken &&
-      config.method &&
-      !["get", "head", "options"].includes(config.method)
-    ) {
-      config.headers.set("X-CSRF-Token", csrfToken);
-    }
+  const csrfToken = getCsrfToken();
+  if (
+    csrfToken &&
+    config.method &&
+    !["get", "head", "options"].includes(config.method)
+  ) {
+    config.headers.set("X-CSRF-Token", csrfToken);
   }
 
   return config;
 });
 
 let isRefreshing = false;
-let refreshSubscribers: ((token: string) => void)[] = [];
+let refreshQueue: (() => void)[] = [];
 
-function onRefreshed(token: string) {
-  refreshSubscribers.forEach((cb) => cb(token));
-  refreshSubscribers = [];
+function flushRefreshQueue() {
+  refreshQueue.forEach((cb) => cb());
+  refreshQueue = [];
 }
 
 apiClient.interceptors.response.use(
@@ -86,7 +71,7 @@ apiClient.interceptors.response.use(
 
     if (isRefreshing) {
       return new Promise((resolve) => {
-        refreshSubscribers.push(() => resolve(apiClient(originalRequest)));
+        refreshQueue.push(() => resolve(apiClient(originalRequest)));
       });
     }
 
@@ -95,17 +80,15 @@ apiClient.interceptors.response.use(
 
     try {
       await apiClient.post("/v1/auth/refresh");
-      setAccessToken(null);
       isRefreshing = false;
-      onRefreshed("");
+      flushRefreshQueue();
       return apiClient(originalRequest);
     } catch (refreshError) {
       isRefreshing = false;
-      refreshSubscribers = [];
+      refreshQueue = [];
       if (axios.isAxiosError(refreshError) && refreshError.response?.status === 401) {
-        setAccessToken(null);
         const publicPaths = ["/sign-in", "/sign-up", "/"];
-        const publicPrefixes = ["/subscribe", "/portal"];
+        const publicPrefixes = ["/subscribe", "/portal", "/auth/google/callback"];
         const isPublic =
           publicPaths.includes(window.location.pathname) ||
           publicPrefixes.some(
@@ -144,13 +127,4 @@ export function getActiveProjectId(): string | null {
   return localStorage.getItem(LS_ACTIVE_PROJECT);
 }
 
-export function setAccessToken(token: string | null) {
-  _accessToken = token;
-  if (typeof window !== "undefined") {
-    if (token) {
-      sessionStorage.setItem(SS_ACCESS_TOKEN, token);
-    } else {
-      sessionStorage.removeItem(SS_ACCESS_TOKEN);
-    }
-  }
-}
+

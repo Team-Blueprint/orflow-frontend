@@ -20,4 +20,15 @@ export interface Subscription {
   amount?: number
   currency?: string
   plan?: { name: string; amount: number; currency: string }
+  customer?: { id: string; email: string; name: string; external_id: string | null }
+}
+
+export interface AuditLogEntry {
+  id: string
+  entity_id: string
+  old_status: string | null
+  new_status: string | null
+  reason: string | null
+  actor: string
+  created_at: string
 }

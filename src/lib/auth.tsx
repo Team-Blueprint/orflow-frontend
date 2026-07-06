@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react"
 import axios from "axios"
-import { apiClient, setAccessToken, LS_API_KEY } from "@/api/apiClient"
+import { apiClient, LS_API_KEY } from "@/api/apiClient"
 
 interface Tenant {
   id: string
@@ -33,7 +33,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 401) {
         setUser(null)
-        setAccessToken(null)
       }
     } finally {
       setIsLoading(false)
@@ -45,9 +44,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [fetchUser])
 
   const login = useCallback(async (email: string, password: string) => {
-    const { data } = await apiClient.post<{ tenant: Tenant; access_token: string }>("/v1/auth/signin", { email, password })
+    const { data } = await apiClient.post<{ tenant: Tenant }>("/v1/auth/signin", { email, password })
     setUser(data.tenant)
-    setAccessToken(data.access_token)
 
     try {
       const keyRes = await apiClient.get<{ sk_test: string | null }>("/v1/auth/keys/new")
@@ -60,9 +58,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const signup = useCallback(async (name: string, email: string, password: string) => {
-    const { data } = await apiClient.post<{ tenant: Tenant; access_token: string }>("/v1/auth/signup", { name, email, password })
+    const { data } = await apiClient.post<{ tenant: Tenant }>("/v1/auth/signup", { name, email, password })
     setUser(data.tenant)
-    setAccessToken(data.access_token)
 
     // Auto-generate test API keys for the new user
     try {
@@ -80,7 +77,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Server session invalidation is best-effort. Always clear local state.
     }
     setUser(null)
-    setAccessToken(null)
     localStorage.removeItem(LS_API_KEY)
   }, [])
 

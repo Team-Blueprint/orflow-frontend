@@ -21,12 +21,12 @@ function SubscribePage() {
   const { code } = Route.useParams();
   const { data: plan, isLoading, error } = useSubscriptionPage(code);
   useDocumentTitle(plan ? `${plan.plan.name} - ${plan.merchant.name}` : "Subscribe");
-  const createSub = useCreatePortalSubscription();
+  const createSub = useCreatePortalSubscription(code);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [showCheckout, setShowCheckout] = useState(false);
-  const [redirecting, setRedirecting] = useState(false);
+  const [redirecting] = useState(false);
 
   if (isLoading) {
     return (
@@ -91,11 +91,7 @@ function SubscribePage() {
             className="w-full min-h-[44px]"
             onClick={async () => {
               try {
-                const result = await createSub.mutateAsync({
-                  planId: plan.plan.id,
-                  name,
-                  email,
-                });
+                  const result = await createSub.mutateAsync({ name, email });
                 if (result.checkoutLink) {
                   window.location.href = result.checkoutLink;
                 }
@@ -118,11 +114,7 @@ function SubscribePage() {
     if (!name.trim()) { setErrorMsg("Name is required"); return; }
     if (!email.trim()) { setErrorMsg("Email is required"); return; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setErrorMsg("Enter a valid email address"); return; }
-    setRedirecting(true);
-    setTimeout(() => {
-      setRedirecting(false);
-      setShowCheckout(true);
-    }, 1500);
+    setShowCheckout(true);
   }
 
   return (

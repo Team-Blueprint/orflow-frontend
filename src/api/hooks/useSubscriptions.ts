@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { apiClient } from "@/api/apiClient"
 import { ENDPOINTS } from "@/api/ENDPOINTS"
-import type { Subscription } from "@/api/types/subscriptions"
+import type { Subscription, AuditLogEntry } from "@/api/types/subscriptions"
 
 export function useSubscriptions(projectId: string) {
   return useQuery({
@@ -14,12 +14,23 @@ export function useSubscriptions(projectId: string) {
   })
 }
 
+export function useSubscriptionAuditLog(subscriptionId: string | null) {
+  return useQuery({
+    queryKey: ["subscription-audit-log", subscriptionId],
+    queryFn: () =>
+      apiClient.get<AuditLogEntry[]>(
+        ENDPOINTS.SUBSCRIPTIONS.AUDIT_LOG(subscriptionId!),
+      ).then(res => res.data),
+    enabled: !!subscriptionId,
+  })
+}
+
 function mapSubscription(raw: any): Subscription {
   return {
     ...raw,
     plan_name: raw.plan?.name ?? raw.plan_name,
-    customer_email: raw.customer_email ?? raw.customer?.email,
-    customer_name: raw.customer_name ?? raw.customer?.name,
+    customer_email: raw.customer?.email ?? raw.customer_email,
+    customer_name: raw.customer?.name ?? raw.customer_name,
     amount: raw.plan?.amount ?? raw.amount,
     currency: raw.plan?.currency ?? raw.currency,
   }

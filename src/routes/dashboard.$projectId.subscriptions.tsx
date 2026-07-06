@@ -1,8 +1,8 @@
 import { useState, useMemo } from "react"
 import { createFileRoute, useParams } from "@tanstack/react-router"
-import { useSubscriptions, useCancelSubscription, usePauseSubscription, useResumeSubscription } from "@/api/hooks/useSubscriptions"
+import { useSubscriptions, useCancelSubscription, usePauseSubscription, useResumeSubscription, useSubscriptionAuditLog } from "@/api/hooks/useSubscriptions"
 import { useDocumentTitle } from "@/hooks/useDocumentTitle"
-import type { Subscription } from "@/api/types/subscriptions"
+import type { Subscription, AuditLogEntry } from "@/api/types/subscriptions"
 import { formatNaira } from "@/lib/currency"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
@@ -33,16 +33,17 @@ const STATUS_BADGE: Record<string, "success" | "destructive" | "muted" | "info">
 
 function SubscriptionsPage() {
   const { projectId } = useParams({ from: "/dashboard/$projectId/subscriptions" })
-  const { data: subscriptions = [], isLoading } = useSubscriptions(projectId)
-  const cancelMutation = useCancelSubscription(projectId)
-  const pauseMutation = usePauseSubscription(projectId)
-  const resumeMutation = useResumeSubscription(projectId)
-  const toast = useToast()
-
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [activeId, setActiveId] = useState<string | null>(null)
   const [mobileOpen, setMobileOpen] = useState(false)
+
+  const { data: subscriptions = [], isLoading } = useSubscriptions(projectId)
+  const cancelMutation = useCancelSubscription(projectId)
+  const pauseMutation = usePauseSubscription(projectId)
+  const resumeMutation = useResumeSubscription(projectId)
+  const { data: auditLog = [] } = useSubscriptionAuditLog(activeId)
+  const toast = useToast()
 
   const filtered = useMemo(() => {
     return subscriptions.filter((s) => {
@@ -159,17 +160,18 @@ function SubscriptionsPage() {
             </div>
             <div className="w-[40%] sticky top-4">
               <div className="border border-hairline bg-paper">
-                {activeSub ? (
-                  <SubscriptionDetailPanel
-                    sub={activeSub}
-                    onCancel={handleCancel}
-                    onPause={handlePause}
-                    onResume={handleResume}
-                    isMutating={isMutating}
-                  />
-                ) : (
-                  <EmptyDetail />
-                )}
+                  {activeSub ? (
+                    <SubscriptionDetailPanel
+                      sub={activeSub}
+                      auditLog={auditLog}
+                      onCancel={handleCancel}
+                      onPause={handlePause}
+                      onResume={handleResume}
+                      isMutating={isMutating}
+                    />
+                  ) : (
+                    <EmptyDetail />
+                  )}
               </div>
             </div>
           </div>
@@ -189,6 +191,7 @@ function SubscriptionsPage() {
               {activeSub && (
                 <SubscriptionDetailPanel
                   sub={activeSub}
+                  auditLog={auditLog}
                   onCancel={handleCancel}
                   onPause={handlePause}
                   onResume={handleResume}
@@ -304,6 +307,7 @@ function EmptyDetail() {
 
 function SubscriptionDetailPanel({
   sub,
+  auditLog,
   onCancel,
   onPause,
   onResume,
@@ -311,6 +315,7 @@ function SubscriptionDetailPanel({
   onClose,
 }: {
   sub: Subscription
+  auditLog: AuditLogEntry[]
   onCancel: (s: Subscription) => void
   onPause: (s: Subscription) => void
   onResume: (s: Subscription) => void
@@ -421,6 +426,36 @@ function SubscriptionDetailPanel({
             )}
           </div>
         </div>
+
+        {auditLog.length > 0 && (
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-ink-soft mb-3">Activity Log</p>
+            <div className="flex flex-col">
+              {auditLog.map((entry, idx) => (
+                <div key={entry.id} className="flex gap-3 py-2.5 border-b border-hairline last:border-0">
+                  <div className="flex flex-col items-center gap-1">
+                    <div className="size-2 rounded-full bg-primary/40 mt-1.5 shrink-0" />
+                    {idx < auditLog.length - 1 && <div className="w-px flex-1 bg-hairline" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-medium text-ink capitalize">
+                        {entry.old_status ?? "—"} → {entry.new_status}
+                      </span>
+                      <span className="text-[10px] text-ink-soft font-mono">
+                        {new Date(entry.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                      </span>
+                    </div>
+                    {entry.reason && (
+                      <p className="text-[11px] text-ink-soft mt-0.5">{entry.reason}</p>
+                    )}
+                    <p className="text-[10px] text-ink-soft/60 mt-0.5">by {entry.actor}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
