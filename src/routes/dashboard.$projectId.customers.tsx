@@ -1,27 +1,17 @@
 import { useState, useMemo } from "react"
 import { createFileRoute, useParams } from "@tanstack/react-router"
 import { useCustomers } from "@/api/hooks/useCustomers"
-import { Badge } from "@/components/ui/badge"
+import { useDocumentTitle } from "@/hooks/useDocumentTitle"
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { CreateCustomerModal } from "@/components/customers/create-customer-modal"
 
 export const Route = createFileRoute("/dashboard/$projectId/customers")({
   component: CustomersPage,
 })
 
-const STATUS_FILTERS = ["all", "active", "inactive", "suspended"] as const
-
-const STATUS_BADGE: Record<string, "success" | "muted" | "destructive"> = {
-  active: "success",
-  inactive: "muted",
-  suspended: "destructive",
-}
-
 function CustomersPage() {
   const { projectId } = useParams({ from: "/dashboard/$projectId/customers" })
   const [search, setSearch] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all")
   const [page, setPage] = useState(0)
   const [createModalOpen, setCreateModalOpen] = useState(false)
   const limit = 15
@@ -30,20 +20,19 @@ function CustomersPage() {
 
   const filtered = useMemo(() => {
     const raw = customersData?.data ?? []
-
     let q: string
     try {
       q = search.toLowerCase().trim()
     } catch { q = "" }
-
     return raw.filter((c) => {
-      if (statusFilter !== "all" && c.activity_status !== statusFilter) return false
       if (q && !c.email.toLowerCase().includes(q) && !c.name.toLowerCase().includes(q)) return false
       return true
     })
-  }, [customersData, search, statusFilter])
+  }, [customersData, search])
 
   const totalPages = customersData ? Math.ceil(customersData.total / limit) : 1
+
+  useDocumentTitle("Customers | Orflow")
 
   return (
     <div className="p-4 sm:px-8 sm:pt-4 sm:pb-8">
@@ -63,7 +52,7 @@ function CustomersPage() {
         </button>
       </div>
 
-      {/* Filters */}
+      {/* Search */}
       <div className="flex flex-col sm:flex-row gap-3 mb-4">
         <Input
           type="text"
@@ -72,18 +61,6 @@ function CustomersPage() {
           placeholder="Search customers…"
           className="flex-1 bg-midnight-soft border border-hairline text-sm text-ink px-3 py-2 placeholder:text-zinc-600 outline-none focus:border-hairline-strong transition-colors min-w-0"
         />
-        <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(0) }}>
-          <SelectTrigger className="w-[150px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {STATUS_FILTERS.map((f) => (
-              <SelectItem key={f} value={f}>
-                {f === "all" ? "All statuses" : f.charAt(0).toUpperCase() + f.slice(1)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
       </div>
 
       {/* Loading */}
@@ -103,20 +80,16 @@ function CustomersPage() {
           <div className="hidden lg:block border border-hairline bg-paper overflow-x-auto">
             <table className="w-full border-collapse">
               <colgroup>
+                <col className="w-[28%]" />
+                <col className="w-[28%]" />
                 <col className="w-[22%]" />
                 <col className="w-[22%]" />
-                <col className="w-[14%]" />
-                <col className="w-[16%]" />
-                <col className="w-[14%]" />
-                <col className="w-[12%]" />
               </colgroup>
               <thead>
                 <tr className="border-b border-hairline bg-midnight-soft">
                   <th className="text-left text-[10px] font-bold uppercase tracking-widest text-ink-soft px-4 py-3">Name</th>
                   <th className="text-left text-[10px] font-bold uppercase tracking-widest text-ink-soft px-4 py-3">Email</th>
-                  <th className="text-left text-[10px] font-bold uppercase tracking-widest text-ink-soft px-4 py-3">Status</th>
-                  <th className="text-left text-[10px] font-bold uppercase tracking-widest text-ink-soft px-4 py-3">Plan</th>
-                  <th className="text-left text-[10px] font-bold uppercase tracking-widest text-ink-soft px-4 py-3">Last Seen</th>
+                  <th className="text-left text-[10px] font-bold uppercase tracking-widest text-ink-soft px-4 py-3">External ID</th>
                   <th className="text-left text-[10px] font-bold uppercase tracking-widest text-ink-soft px-4 py-3">Created</th>
                 </tr>
               </thead>
@@ -125,17 +98,7 @@ function CustomersPage() {
                   <tr key={c.id} className="border-b border-hairline last:border-0 hover:bg-midnight-soft/30 transition-colors">
                     <td className="px-4 py-3 text-sm font-bold text-ink">{c.name}</td>
                     <td className="px-4 py-3 text-sm text-ink-soft">{c.email}</td>
-                    <td className="px-4 py-3">
-                      <Badge variant={STATUS_BADGE[c.activity_status] ?? "muted"} className="capitalize text-xs">
-                        {c.activity_status}
-                      </Badge>
-                    </td>
-                    <td className="px-4 py-3 text-xs text-ink-soft">{c.plan_name ?? "—"}</td>
-                    <td className="px-4 py-3 text-xs text-ink-soft font-mono">
-                      {c.last_seen
-                        ? new Date(c.last_seen).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
-                        : "—"}
-                    </td>
+                    <td className="px-4 py-3 text-xs text-ink-soft font-mono">{c.external_id ?? "—"}</td>
                     <td className="px-4 py-3 text-xs text-ink-soft font-mono">
                       {new Date(c.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                     </td>
@@ -149,23 +112,14 @@ function CustomersPage() {
           <div className="flex flex-col gap-3 lg:hidden">
             {filtered.map((c) => (
               <div key={c.id} className="border border-hairline bg-paper p-4">
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <p className="text-sm font-bold text-ink">{c.name}</p>
-                    <p className="text-xs text-ink-soft mt-0.5">{c.email}</p>
-                  </div>
-                  <Badge variant={STATUS_BADGE[c.activity_status] ?? "muted"} className="shrink-0 capitalize text-xs">
-                    {c.activity_status}
-                  </Badge>
+                <div>
+                  <p className="text-sm font-bold text-ink">{c.name}</p>
+                  <p className="text-xs text-ink-soft mt-0.5">{c.email}</p>
                 </div>
-                <div className="mt-3 flex items-center gap-3 text-[10px] text-ink-soft">
-                  <span className="font-semibold uppercase tracking-wider bg-paper border border-hairline px-2 py-0.5">
-                    {c.plan_name ?? "No plan"}
-                  </span>
+                <div className="mt-2 flex items-center gap-3 text-[10px] text-ink-soft">
+                  {c.external_id && <span className="font-mono">ID: {c.external_id}</span>}
                   <span className="font-mono">
-                    {c.last_seen
-                      ? new Date(c.last_seen).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
-                      : "Never"}
+                    {new Date(c.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                   </span>
                 </div>
               </div>
@@ -174,9 +128,7 @@ function CustomersPage() {
 
           {/* Pagination */}
           <div className="mt-4 flex items-center justify-between text-xs text-ink-soft">
-            <span>
-              {customersData?.total ?? 0} total
-            </span>
+            <span>{customersData?.total ?? 0} total</span>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setPage((p) => Math.max(0, p - 1))}
@@ -185,9 +137,7 @@ function CustomersPage() {
               >
                 Previous
               </button>
-              <span className="font-mono">
-                {page + 1} / {totalPages}
-              </span>
+              <span className="font-mono">{page + 1} / {totalPages}</span>
               <button
                 onClick={() => setPage((p) => p + 1)}
                 disabled={page >= totalPages - 1}

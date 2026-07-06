@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query"
 import { apiClient } from "@/api/apiClient"
 import { ENDPOINTS } from "@/api/ENDPOINTS"
 import { PlansTable, NewPlanModal } from "@/components/plans"
+import { useDocumentTitle } from "@/hooks/useDocumentTitle"
 import { PlansTableSkeleton } from "@/components/skeletons/plans-table-skeleton"
 
 export const Route = createFileRoute("/dashboard/$projectId/plans/")({
@@ -19,6 +20,8 @@ function PlansPage() {
     queryFn: () =>
       apiClient.get(ENDPOINTS.PLANS.LIST).then((res) => res.data),
   })
+
+  useDocumentTitle("Plans | Orflow")
 
   return (
     <div className="p-4 sm:px-8 sm:pt-4 sm:pb-8">

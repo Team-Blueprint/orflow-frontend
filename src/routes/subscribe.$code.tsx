@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useSubscriptionPage, useCreatePortalSubscription } from "@/lib/portal-queries";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { formatAmount } from "@/lib/portal-data";
-import { CloseCircle, Lock } from "@solar-icons/react";
+import { LinkBroken, Lock } from "@solar-icons/react";
 
 export const Route = createFileRoute("/subscribe/$code")({
   component: SubscribePage,
@@ -19,6 +20,7 @@ const intervalLabel: Record<string, string> = {
 function SubscribePage() {
   const { code } = Route.useParams();
   const { data: plan, isLoading, error } = useSubscriptionPage(code);
+  useDocumentTitle(plan ? `${plan.plan.name} - ${plan.merchant.name}` : "Subscribe");
   const createSub = useCreatePortalSubscription();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -36,19 +38,24 @@ function SubscribePage() {
 
   if (!plan || error) {
     return (
-      <div className="rounded-xl border border-border bg-card p-8 shadow-sm text-center max-w-lg mx-auto">
-        <CloseCircle weight="BoldDuotone" className="mx-auto h-10 w-10 text-destructive" />
-        <h1 className="mt-4 text-lg font-semibold tracking-tight text-foreground">Page not found</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+      <div className="flex flex-col items-center justify-center min-h-[calc(100dvh-6rem)] text-center">
+        <div className="flex items-center justify-center size-14 rounded-full bg-red-50">
+          <LinkBroken weight="BoldDuotone" className="size-7 text-destructive" />
+        </div>
+        <h1 className="mt-5 text-2xl font-semibold text-ink tracking-tight">Link not found</h1>
+        <p className="mt-2 text-sm text-ink-soft text-center max-w-sm leading-relaxed">
           This subscription page doesn&apos;t exist or has been removed.
         </p>
+        <Button asChild variant="default" size="lg" className="mt-8 rounded-none min-h-[44px]">
+          <a href="/">Back to Home</a>
+        </Button>
       </div>
     );
   }
 
   if (showCheckout) {
     return (
-      <div className="rounded-xl border border-border bg-card p-8 shadow-sm max-w-lg mx-auto">
+      <div className="border border-border bg-card p-8 max-w-lg mx-auto">
         <div className="flex flex-col items-center gap-4 py-6 text-center">
           <Lock weight="BoldDuotone" className="h-12 w-12 text-primary" />
           <div>
@@ -57,7 +64,7 @@ function SubscribePage() {
               Secure payment page
             </p>
           </div>
-          <div className="w-full rounded-lg bg-muted p-4 text-left text-sm space-y-2">
+          <div className="w-full bg-muted p-4 text-left text-sm space-y-2">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Plan</span>
               <span className="font-medium text-foreground">{plan.plan.name}</span>
@@ -75,7 +82,7 @@ function SubscribePage() {
               <span className="font-medium text-foreground">{name}</span>
             </div>
           </div>
-          <div className="rounded-lg border border-border bg-muted/50 p-4 text-sm text-muted-foreground w-full">
+          <div className="border border-border bg-muted/50 p-4 text-sm text-muted-foreground w-full">
             <p className="font-medium text-foreground mb-1">Secure Checkout</p>
             <p>You will be redirected to a secure payment page to complete your subscription.</p>
           </div>
@@ -127,7 +134,7 @@ function SubscribePage() {
           <p className="text-xs text-muted-foreground">via Orflow</p>
         </div>
 
-        <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+        <div className="border border-border bg-card p-6">
           <div className="mb-3">
             <span className="font-mono text-2xl font-bold tabular-nums text-foreground">
               NGN {formatAmount(plan.plan.amount)}
@@ -148,7 +155,7 @@ function SubscribePage() {
       </div>
 
       {/* Right: form */}
-      <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+      <div className="border border-border bg-card p-6">
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="sub-name">Full name</Label>
@@ -157,7 +164,7 @@ function SubscribePage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Enter your full name"
-              className="min-h-[44px]"
+              className="min-h-[44px] rounded-none"
               autoFocus
             />
           </div>
@@ -169,7 +176,7 @@ function SubscribePage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="min-h-[44px]"
+              className="min-h-[44px] rounded-none"
             />
           </div>
           {errorMsg && <p className="text-sm text-destructive">{errorMsg}</p>}

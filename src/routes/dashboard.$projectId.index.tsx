@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { createFileRoute, useParams } from "@tanstack/react-router"
 import { useAnalytics, ZEROED_ANALYTICS } from "@/api/hooks/useAnalytics"
+import { useDocumentTitle } from "@/hooks/useDocumentTitle"
 import { KPICard } from "@/components/kpi-card"
 import { RevenueChart } from "@/components/revenue-chart"
 import { TimeRangeSelector } from "@/components/time-range-selector"
@@ -19,6 +20,7 @@ const LABELS: Record<number, string> = {
 }
 
 function Overview() {
+  useDocumentTitle("Overview | Orflow")
   const { projectId } = useParams({ from: "/dashboard/$projectId/" })
   const [days, setDays] = useState(30)
   const { data, isLoading } = useAnalytics(projectId, days)

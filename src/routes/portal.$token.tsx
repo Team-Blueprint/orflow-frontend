@@ -6,6 +6,7 @@ import {
   useCancelPortalSubscription,
   usePausePortalSubscription,
 } from "@/lib/portal-queries";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { DataTable } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
@@ -39,6 +40,7 @@ function intervalLabel(interval: string): string {
 function PortalSubscriptionPage() {
   const { token } = Route.useParams();
   const { data, isLoading } = usePortalSubscription(token);
+  useDocumentTitle(data ? `${data.plan?.name ?? ""} Billing Portal` : "Billing Portal");
   const updateCard = useUpdatePortalCard(token);
   const cancelSub = useCancelPortalSubscription(token);
   const pauseSub = usePausePortalSubscription(token);

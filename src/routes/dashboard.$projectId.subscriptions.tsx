@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react"
 import { createFileRoute, useParams } from "@tanstack/react-router"
 import { useSubscriptions, useCancelSubscription, usePauseSubscription, useResumeSubscription } from "@/api/hooks/useSubscriptions"
+import { useDocumentTitle } from "@/hooks/useDocumentTitle"
 import type { Subscription } from "@/api/types/subscriptions"
 import { formatNaira } from "@/lib/currency"
 import { cn } from "@/lib/utils"
@@ -49,9 +50,9 @@ function SubscriptionsPage() {
       if (search) {
         const q = search.toLowerCase()
         return (
-          s.customer_email.toLowerCase().includes(q) ||
-          s.customer_name.toLowerCase().includes(q) ||
-          s.plan_name.toLowerCase().includes(q) ||
+          (s.customer_email ?? "").toLowerCase().includes(q) ||
+          (s.customer_name ?? "").toLowerCase().includes(q) ||
+          (s.plan_name ?? "").toLowerCase().includes(q) ||
           s.id.toLowerCase().includes(q)
         )
       }
@@ -108,6 +109,8 @@ function SubscriptionsPage() {
       })
     }
   }
+
+  useDocumentTitle("Subscriptions | Orflow")
 
   return (
     <div className="p-4 sm:px-8 sm:pt-4 sm:pb-8">
@@ -258,7 +261,7 @@ function SubscriptionTable({
               <div className="text-ink">{sub.customer_name}</div>
               <div className="text-[11px] text-ink-soft truncate">{sub.customer_email}</div>
             </td>
-            <td className="px-4 py-3 font-mono text-sm text-ink">{formatNaira(sub.amount)}</td>
+            <td className="px-4 py-3 font-mono text-sm text-ink">{formatNaira(sub.amount ?? 0)}</td>
             <td className="px-4 py-3">
               <Badge variant={STATUS_BADGE[sub.status] ?? "muted"} className="capitalize text-[10px]">
                 {sub.status === "past_due" ? "Past Due" : sub.status === "incomplete_expired" ? "Expired" : sub.status}
@@ -343,21 +346,20 @@ function SubscriptionDetailPanel({
           <p className="text-[10px] font-bold uppercase tracking-widest text-ink-soft mb-3">Customer</p>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-primary/15 text-primary text-sm font-bold flex items-center justify-center">
-              {sub.customer_name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()}
+              {(sub.customer_name ?? "").split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase() || "?"}
             </div>
             <div>
-              <p className="text-sm font-semibold text-ink">{sub.customer_name}</p>
-              <p className="text-xs text-ink-soft">{sub.customer_email}</p>
+              <p className="text-sm font-semibold text-ink">{sub.customer_name ?? "—"}</p>
+              <p className="text-xs text-ink-soft">{sub.customer_email ?? "—"}</p>
             </div>
           </div>
-          {sub.card_last_four && (
+          {sub.payment_method_id && (
             <div className="mt-3 flex items-center gap-2 text-xs text-ink-soft border border-hairline bg-canvas px-3 py-2">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-zinc-500">
                 <rect x="1" y="4" width="22" height="16" rx="2" />
                 <path d="M1 10h22" />
               </svg>
-              <span className="font-medium">{sub.card_brand}</span>
-              <span className="font-mono">**** {sub.card_last_four}</span>
+              <span className="font-mono">ID: {sub.payment_method_id}</span>
             </div>
           )}
         </div>
@@ -366,8 +368,8 @@ function SubscriptionDetailPanel({
           <p className="text-[10px] font-bold uppercase tracking-widest text-ink-soft mb-3">Subscription</p>
           <div className="space-y-3">
             <DetailRow label="ID" value={sub.id} mono />
-            <DetailRow label="Plan" value={sub.plan_name} />
-            <DetailRow label="Amount" value={formatNaira(sub.amount)} mono />
+            <DetailRow label="Plan" value={sub.plan_name ?? "—"} />
+            <DetailRow label="Amount" value={formatNaira(sub.amount ?? 0)} mono />
             <DetailRow label="Type" value={sub.type} capitalize />
             <DetailRow label="Status" value={sub.status === "past_due" ? "Past Due" : sub.status === "incomplete_expired" ? "Expired" : sub.status} capitalize>
               <Badge variant={STATUS_BADGE[sub.status] ?? "muted"} className="capitalize text-[10px]">
