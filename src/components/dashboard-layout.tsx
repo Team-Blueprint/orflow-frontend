@@ -51,7 +51,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const projectSelectorRef = useRef<HTMLDivElement>(null);
-  const userMenuRef = useRef<HTMLDivElement>(null);
+  const mobileUserMenuRef = useRef<HTMLDivElement>(null);
+  const desktopUserMenuRef = useRef<HTMLDivElement>(null);
   const { projectId } = useParams({ strict: false });
 
   const { data: projects, isLoading: isProjectsLoading, error: projectsError } = useProjects();
@@ -100,7 +101,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      const mobileInside = mobileUserMenuRef.current?.contains(target);
+      const desktopInside = desktopUserMenuRef.current?.contains(target);
+      if (!mobileInside && !desktopInside) {
         setUserMenuOpen(false);
       }
     }
@@ -160,7 +164,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </a>
         </div>
 
-        <div ref={userMenuRef} className="relative">
+        <div ref={mobileUserMenuRef} className="relative">
           <button
             type="button"
             onClick={() => setUserMenuOpen((o) => !o)}
@@ -365,7 +369,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             </Link>
           </div>
 
-          <div ref={userMenuRef} className="relative">
+          <div ref={desktopUserMenuRef} className="relative">
             <button
               type="button"
               onClick={() => setUserMenuOpen((o) => !o)}
