@@ -9,6 +9,7 @@ import {
   Bill,
   UsersGroupRounded,
   Settings,
+  ShieldCheck,
 } from "@/lib/icons";
 import { WebhookIcon, LogoIcon } from "@/components/icons";
 import { cn } from "@/lib/utils";
@@ -123,6 +124,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     }
     return location.pathname === resolvedPath || location.pathname.startsWith(resolvedPath + "/");
   };
+
+  const reconciliationAdmins = (import.meta.env.VITE_RECONCILIATION_ADMINS ?? "")
+    .split(",")
+    .map((s: string) => s.trim())
+    .filter(Boolean);
+  const isReconAdmin = !!(user?.email && reconciliationAdmins.includes(user.email));
 
   if (isProjectsLoading) {
     return <div className="flex min-h-screen items-center justify-center bg-canvas text-ink">Loading projects...</div>;
@@ -358,6 +365,21 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               {item.label}
             </Link>
           ))}
+          {isReconAdmin && (
+            <Link
+              to="/admin/reconciliation"
+              onClick={closeSidebar}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2 text-sm font-medium transition-colors duration-150 cursor-pointer",
+                location.pathname === "/admin/reconciliation"
+                  ? "bg-primary/60 text-white"
+                  : "text-ink-soft hover:text-ink hover:bg-primary/5",
+              )}
+            >
+              <ShieldCheck size={18} />
+              Reconciliation
+            </Link>
+          )}
         </div>
       </aside>
 
