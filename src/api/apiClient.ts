@@ -1,5 +1,6 @@
 import axios from "axios";
 import { isTestMode } from "@/lib/environment";
+import { getPortalToken } from "@/lib/portal-auth";
 
 declare module "axios" {
   interface InternalAxiosRequestConfig {
@@ -34,6 +35,9 @@ apiClient.interceptors.request.use((config) => {
   if (projectId) config.headers.set("X-Project-Id", projectId);
 
   if (isTestMode()) config.headers.set("X-Test-Mode", "true");
+
+  const portalToken = getPortalToken();
+  if (portalToken) config.headers.setAuthorization(`Bearer ${portalToken}`);
 
   const csrfToken = getCsrfToken();
   if (

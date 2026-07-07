@@ -1,101 +1,93 @@
-import { useQuery, useMutation } from "@tanstack/react-query"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { apiClient } from "@/api/apiClient"
-import type { PortalData, SubscriptionPageData, BillingRecord } from "./portal-data"
+import type { PortalSubscriptionRead, PortalPaymentRead, SubscriptionPageData } from "./portal-data"
 import type { PublicPageInfo, PublicCheckoutResponse } from "@/api/types/subscription-pages"
+import { clearPortalSession } from "./portal-auth"
 
 export const queryKeys = {
   portal: {
-    subscription: (token: string) => ["portal", "subscription", token] as const,
-    invoices: (token: string) => ["portal", "invoices", token] as const,
+    subscription: ["portal", "subscription"] as const,
+    payments: ["portal", "payments"] as const,
   },
   subscriptionPage: {
     byCode: (code: string) => ["subscriptionPage", code] as const,
   },
 }
 
-function delay(ms = 150) {
-  return new Promise((r) => setTimeout(r, ms))
-}
-
-const MOCK_PORTAL: PortalData = {
-  subscription: {
-    id: "sub_mock_01",
-    projectId: "proj_mock",
-    subscriberId: "sub_mock_01",
-    planId: "plan_mock_01",
-    subscriptionCode: "mock123",
-    status: "active",
-    amount: 29900,
-    nextPaymentDate: new Date(Date.now() + 30 * 86400000).toISOString(),
-    createdAt: new Date(Date.now() - 60 * 86400000).toISOString(),
-  },
-  plan: {
-    id: "plan_mock_01",
-    projectId: "proj_mock",
-    name: "Starter Monthly",
-    description: "Essential features for small teams.",
-    amount: 29900,
-    currency: "NGN",
-    interval: "monthly",
-  },
-  subscriber: {
-    id: "sub_mock_01",
-    projectId: "proj_mock",
-    email: "customer@example.com",
-    name: "Jamie",
-    status: "active",
-    cardBrand: "Visa",
-    cardLast4: "4242",
-  },
-  billing: [
-    { id: "br_01", subscriptionId: "sub_mock_01", amount: 29900, status: "paid", date: new Date(Date.now() - 30 * 86400000).toISOString() },
-    { id: "br_02", subscriptionId: "sub_mock_01", amount: 29900, status: "paid", date: new Date(Date.now() - 60 * 86400000).toISOString() },
-    { id: "br_03", subscriptionId: "sub_mock_01", amount: 29900, status: "paid", date: new Date(Date.now() - 90 * 86400000).toISOString() },
-  ],
-}
-
-export function usePortalSubscription(token: string) {
+export function usePortalSubscription() {
   return useQuery({
-    queryKey: queryKeys.portal.subscription(token),
-    queryFn: async (): Promise<PortalData | null> => {
-      await delay()
-      return MOCK_PORTAL
+    queryKey: queryKeys.portal.subscription,
+    queryFn: async (): Promise<PortalSubscriptionRead | null> => {
+      try {
+        const res = await apiClient.get<PortalSubscriptionRead>(
+          "/v1/portal/subscriptions/me",
+        )
+        return res.data
+      } catch {
+        return null
+      }
     },
+    retry: false,
   })
 }
 
-export function useUpdatePortalCard(_token: string) {
+export function usePortalBillingHistory() {
+  return useQuery({
+    queryKey: queryKeys.portal.payments,
+    queryFn: async (): Promise<PortalPaymentRead[]> => {
+      const res = await apiClient.get<PortalPaymentRead[]>(
+        "/v1/portal/subscriptions/me/payments",
+      )
+      return res.data
+    },
+    retry: false,
+  })
+}
+
+export function useUpdatePortalCard() {
+  const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (input: { brand: string; last4: string }) => {
-      await delay(300)
-      return { brand: input.brand, last4: input.last4 }
+    mutationFn: async (input: {
+      payment_token: string
+      card_brand?: string
+      card_last4?: string
+    }) => {
+      await apiClient.post("/v1/portal/subscriptions/update-card", input)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.portal.subscription })
     },
   })
 }
 
-export function useCancelPortalSubscription(_token: string) {
+export function useCancelPortalSubscription() {
   return useMutation({
     mutationFn: async () => {
-      await delay(300)
-      return true
+      await apiClient.post("/v1/portal/subscriptions/cancel")
     },
   })
 }
 
-export function usePausePortalSubscription(_token: string) {
+export function usePausePortalSubscription() {
   return useMutation({
     mutationFn: async () => {
-      await delay(300)
-      return true
+      await apiClient.post("/v1/portal/subscriptions/pause")
     },
   })
 }
 
-export function useResumePortalSubscription(_token: string) {
+export function useResumePortalSubscription() {
   return useMutation({
     mutationFn: async () => {
-      await delay(300)
-      return true
+      await apiClient.post("/v1/portal/subscriptions/resume")
+    },
+  })
+}
+
+export function useUpdatePortalPin() {
+  return useMutation({
+    mutationFn: async (input: { current_pin: string; new_pin: string }) => {
+      await apiClient.post("/v1/portal/update-pin", input)
     },
   })
 }
@@ -143,12 +135,14 @@ export function useCreatePortalSubscription(code: string) {
   })
 }
 
-export function usePortalBillingHistory(token: string) {
-  return useQuery({
-    queryKey: queryKeys.portal.invoices(token),
-    queryFn: async (): Promise<BillingRecord[]> => {
-      await delay()
-      return MOCK_PORTAL.billing
+export function usePortalVerifyAccess() {
+  return useMutation({
+    mutationFn: async (input: { token_slug: string; pin: string }) => {
+      const res = await apiClient.post<{ portal_session_token: string }>(
+        "/v1/portal/verify-access",
+        input,
+      )
+      return res.data.portal_session_token
     },
   })
 }
