@@ -162,7 +162,14 @@ function SubscribePage() {
               </div>
             </div>
           )}
-          
+
+          <div className="border border-border bg-primary/5 p-4 w-full text-left">
+            <p className="text-xs font-medium text-foreground">After payment — portal access</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Check your email for a 6-digit PIN to access your self-service portal where you can manage your subscription, view payment history, and update your card.
+            </p>
+          </div>
+
           <Button
             size="lg"
             className="w-full min-h-[44px]"
