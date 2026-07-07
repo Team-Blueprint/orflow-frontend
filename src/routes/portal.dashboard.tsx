@@ -67,7 +67,6 @@ function PortalDashboardPage() {
   const resumeSub = useResumePortalSubscription();
   const updatePin = useUpdatePortalPin();
 
-  const [showUpdateCard, setShowUpdateCard] = useState(false);
   const [cardUpdating, setCardUpdating] = useState(false);
   const [cardUpdated, setCardUpdated] = useState(false);
   const [showCancel, setShowCancel] = useState(false);
@@ -107,18 +106,22 @@ function PortalDashboardPage() {
         clientId,
         environment: isTestMode() ? "sandbox" : "live",
         order: {
+          orderReference: crypto.randomUUID(),
+          customerId: clientId,
+          accountId,
           callbackUrl: window.location.origin + "/portal/dashboard",
           customerEmail: "",
           amount: "0.00",
           currency: "NGN",
         },
-        tokenizeCard: "true",
+        tokenizeCard: true,
         onCreateOrder: () => {},
-        onFailure: (err) => {
+        onFailure: () => {
           setCardUpdating(false);
         },
         onClose: () => {
           setCardUpdating(false);
+          return {};
         },
         onPaymentSuccess: async (response) => {
           setCardUpdating(false);
@@ -143,7 +146,6 @@ function PortalDashboardPage() {
               {
                 onSuccess: () => {
                   setCardUpdated(true);
-                  setShowUpdateCard(false);
                   setTimeout(() => setCardUpdated(false), 3000);
                 },
                 onError: () => {

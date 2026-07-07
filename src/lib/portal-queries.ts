@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { apiClient } from "@/api/apiClient"
 import type { PortalSubscriptionRead, PortalPaymentRead, SubscriptionPageData } from "./portal-data"
 import type { PublicPageInfo, PublicCheckoutResponse } from "@/api/types/subscription-pages"
-import { clearPortalSession } from "./portal-auth"
+
 
 export const queryKeys = {
   portal: {
