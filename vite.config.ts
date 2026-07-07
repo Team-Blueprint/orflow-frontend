@@ -20,4 +20,17 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  server: {
+    proxy: {
+      "/api": {
+        target: "https://orflow-backend.onrender.com",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, "/v1"),
+      },
+      "/v1": {
+        target: "https://orflow-backend.onrender.com",
+        changeOrigin: true,
+      },
+    },
+  },
 });
