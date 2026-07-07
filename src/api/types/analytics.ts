@@ -7,8 +7,7 @@ export interface AnalyticsSummary {
 
 export interface RevenueDataPoint {
   date: string
-  revenue: number
-  volume: number
+  amount: number
 }
 
 export interface AnalyticsResponse {

@@ -82,26 +82,26 @@ function RevenueChart({ data }: RevenueChartProps) {
     return (
       <div className="border border-hairline bg-paper p-4 sm:p-5 flex items-center justify-center h-56">
         <p className="text-3xl font-bold tabular-nums text-ink">
-          {formatNaira(pt.revenue)}
+          {formatNaira(pt.amount)}
         </p>
       </div>
     )
   }
 
-  const maxRevenue = Math.max(...data.map((d) => d.revenue))
+  const maxAmount = Math.max(...data.map((d) => d.amount))
 
   const xScale = (_: number, i: number) =>
     PADDING.left + (i / (data.length - 1)) * PLOT_W
   const yScale = (v: number) =>
-    PADDING.top + PLOT_H - (v / maxRevenue) * PLOT_H
+    PADDING.top + PLOT_H - (v / maxAmount) * PLOT_H
 
-  const points = data.map((d, i) => `${xScale(0, i)},${yScale(d.revenue)}`).join(" ")
+  const points = data.map((d, i) => `${xScale(0, i)},${yScale(d.amount)}`).join(" ")
   const areaBase = PADDING.top + PLOT_H
   const areaPoints = `${xScale(0, 0)},${areaBase} ${points} ${xScale(0, data.length - 1)},${areaBase}`
 
   const yTicks = 4
   const yTickValues = Array.from({ length: yTicks + 1 }, (_, i) =>
-    Math.round((maxRevenue / yTicks) * i),
+    Math.round((maxAmount / yTicks) * i),
   )
 
   return (
@@ -158,7 +158,7 @@ function RevenueChart({ data }: RevenueChartProps) {
           <circle
             key={d.date}
             cx={xScale(0, i)}
-            cy={yScale(d.revenue)}
+            cy={yScale(d.amount)}
             r={hoveredIdx === i ? 5 : 3}
             fill="#f97316"
             className="transition-all duration-100"
@@ -192,9 +192,8 @@ function RevenueChart({ data }: RevenueChartProps) {
         >
           <p className="text-[11px] text-zinc-400 whitespace-nowrap">{formatDateFull(hovered.date)}</p>
           <p className="text-sm font-semibold text-ink tabular-nums mt-0.5">
-            {formatNaira(hovered.revenue)}
+            {formatNaira(hovered.amount)}
           </p>
-          <p className="text-[11px] text-zinc-500 whitespace-nowrap">{hovered.volume} transactions</p>
         </div>
       )}
     </div>
