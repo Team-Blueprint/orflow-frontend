@@ -59,7 +59,7 @@ function InfoTooltip({ text }: { text: string }) {
       <span className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 transition-opacity duration-150 ${
         isOpen ? "opacity-100 visible" : "opacity-0 invisible"
       } pointer-events-auto`}>
-        <span className="bg-zinc-800 text-zinc-200 text-[11px] leading-relaxed px-4 py-3 border border-zinc-700 max-w-96 block text-center whitespace-normal shadow-lg">
+          <span className="bg-zinc-800 text-zinc-200 text-[11px] leading-relaxed px-4 py-3 border border-zinc-700 max-w-xl block text-center whitespace-normal shadow-lg">
           {text}
         </span>
       </span>
