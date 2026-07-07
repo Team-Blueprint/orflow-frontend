@@ -2,14 +2,21 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { apiClient } from "@/api/apiClient"
 import type { SubscriptionPageWithPlanRead, SubscriptionPageCreate, SubscriptionPageUpdate, SubscriptionPageRead } from "@/api/types/subscription-pages"
 
+function mapPage(raw: any): SubscriptionPageWithPlanRead {
+  return {
+    ...raw,
+    environment: raw.is_test ? "TEST" : "LIVE",
+  }
+}
+
 export function useSubscriptionPages(projectId: string) {
   return useQuery({
     queryKey: ["subscription-pages", projectId],
     queryFn: () =>
-      apiClient.get<SubscriptionPageWithPlanRead[]>(
+      apiClient.get<any[]>(
         "/v1/subscription-pages/list",
         { params: { projectId } },
-      ).then(res => res.data),
+      ).then(res => res.data.map(mapPage)),
   })
 }
 
@@ -45,6 +52,20 @@ export function useUpdateSubscriptionPage(projectId: string) {
       apiClient.patch<SubscriptionPageRead>(
         `/v1/subscription-pages/${pageId}/update`,
         payload,
+      ).then(res => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["subscription-pages", projectId] })
+    },
+  })
+}
+
+export function useToggleSubscriptionPage(projectId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ pageId, isActive }: { pageId: string; isActive: boolean }) =>
+      apiClient.patch<SubscriptionPageRead>(
+        `/v1/subscription-pages/${pageId}/update`,
+        { is_active: isActive },
       ).then(res => res.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["subscription-pages", projectId] })

@@ -3,13 +3,11 @@ import { useParams, useNavigate, Link } from "@tanstack/react-router"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { apiClient } from "@/api/apiClient"
 import { ENDPOINTS } from "@/api/ENDPOINTS"
-import { useSubscriptionPages, useCreateSubscriptionPage, useDeleteSubscriptionPage, useUpdateSubscriptionPage } from "@/api/hooks/useSubscriptionPages"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { PlanDetailSkeleton } from "@/components/skeletons/plan-detail-skeleton"
 import { formatNaira } from "@/lib/currency"
-import { useToast } from "@/components/webhooks/utils/toast"
 import { useDocumentTitle } from "@/hooks/useDocumentTitle"
+import { SubscriptionPagesList } from "@/components/plans/SubscriptionPagesList"
 
 interface Plan {
   id: string
@@ -65,7 +63,6 @@ export function PlanDetailPage() {
   const { planId, projectId } = useParams({ from: "/dashboard/$projectId/plans/$planId" })
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const toast = useToast()
 
   const { data: plan, isLoading: isPlanLoading } = useQuery<Plan>({
     queryKey: ["plan", planId],
@@ -83,17 +80,9 @@ export function PlanDetailPage() {
     enabled: !!planId,
   })
 
-  const { data: pages = [], isLoading: isPagesLoading } = useSubscriptionPages(projectId)
-  const createPage = useCreateSubscriptionPage(projectId)
-  const deletePage = useDeleteSubscriptionPage(projectId)
-  const togglePage = useUpdateSubscriptionPage(projectId)
-
-  const planPages = pages.filter(p => p.plan_id === planId)
-
   const [name, setName] = useState("")
   const [trialPeriodDays, setTrialPeriodDays] = useState<string>("")
   const [installmentsCount, setInstallmentsCount] = useState<string>("")
-  const [copiedId, setCopiedId] = useState<string | null>(null)
 
   useEffect(() => {
     if (plan) {
@@ -102,13 +91,6 @@ export function PlanDetailPage() {
       setInstallmentsCount(plan.installments_count?.toString() || "")
     }
   }, [plan])
-
-  useEffect(() => {
-    if (copiedId) {
-      const t = setTimeout(() => setCopiedId(null), 2000)
-      return () => clearTimeout(t)
-    }
-  }, [copiedId])
 
   const updateMutation = useMutation({
     mutationFn: (data: Partial<Plan>) => apiClient.patch(ENDPOINTS.PLANS.UPDATE(planId), data),
@@ -134,34 +116,20 @@ export function PlanDetailPage() {
     })
   }
 
-  const handleCreatePage = () => {
-    createPage.mutate({ plan_id: planId }, {
-      onSuccess: () => toast.success("Subscription page created"),
-      onError: () => toast.error("Failed to create subscription page"),
-    })
-  }
-
-  const handleTogglePage = (pageId: string, isActive: boolean) => {
-    togglePage.mutate({ pageId, is_active: !isActive }, {
-      onSuccess: () => toast.success(isActive ? "Page deactivated" : "Page activated"),
-      onError: () => toast.error("Failed to update page"),
-    })
-  }
-
-  const handleDeletePage = (pageId: string) => {
-    deletePage.mutate(pageId, {
-      onSuccess: () => toast.success("Subscription page deleted"),
-      onError: () => toast.error("Failed to delete page"),
-    })
-  }
-
-  const handleCopyUrl = async (url: string, id: string) => {
-    await navigator.clipboard.writeText(`${window.location.origin}${url}`)
-    setCopiedId(id)
-  }
+  const isSaving = updateMutation.isPending || archiveMutation.isPending
+  const displayedSubs = subscriptions.slice(0, 5)
 
   if (isPlanLoading) {
-    return <PlanDetailSkeleton />
+    return (
+      <div className="mx-auto max-w-5xl px-6 py-16">
+        <div className="h-8 bg-zinc-800 animate-pulse w-48 mb-4" />
+        <div className="h-4 bg-zinc-800 animate-pulse w-32 mb-8" />
+        <div className="grid gap-6 md:grid-cols-2">
+          <div className="h-64 bg-zinc-800 animate-pulse" />
+          <div className="h-64 bg-zinc-800 animate-pulse" />
+        </div>
+      </div>
+    )
   }
 
   if (!plan) {
@@ -170,22 +138,15 @@ export function PlanDetailPage() {
         <p className="text-center text-ink-soft">Plan not found</p>
         <div className="mt-6 flex justify-center">
           <Link
-            to={"/dashboard/$projectId" as any}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white hover:bg-primary-hover transition-colors"
+            to={`/dashboard/${projectId}/plans` as any}
+            className="text-sm text-primary hover:text-primary-hover transition-colors"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M19 12H5" />
-              <polyline points="12 19 5 12 12 5" />
-            </svg>
-            Back to Projects
+            &larr; Back to Plans
           </Link>
         </div>
       </div>
     )
   }
-
-  const isSaving = updateMutation.isPending || archiveMutation.isPending
-  const displayedSubs = subscriptions.slice(0, 5)
 
   return (
     <div className="mx-auto max-w-7xl p-4 sm:px-8 sm:pt-4 sm:pb-8">
@@ -388,63 +349,7 @@ export function PlanDetailPage() {
             </div>
 
             {/* Subscription Pages Widget */}
-            <div className="border border-hairline bg-paper p-5">
-              <h3 className="text-sm font-semibold text-ink mb-4">Subscription Pages</h3>
-              {isPagesLoading ? (
-                <div className="h-10 bg-zinc-800 animate-pulse" />
-              ) : planPages.length > 0 ? (
-                <div className="flex flex-col gap-3">
-                  {planPages.map(p => (
-                    <div key={p.id} className="border border-hairline bg-midnight-soft p-3">
-                      <div className="flex items-center justify-between gap-2 mb-2">
-                        <div className="flex items-center gap-2">
-                          <span className={`size-2 rounded-full ${p.is_active ? "bg-green-500" : "bg-zinc-500"}`} />
-                          <span className="text-xs font-medium text-ink">{p.is_active ? "Active" : "Inactive"}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => handleTogglePage(p.id, p.is_active)}
-                            className="text-[10px] font-medium text-ink-soft hover:text-ink border border-hairline px-2 py-1 transition-colors cursor-pointer"
-                          >
-                            {p.is_active ? "Deactivate" : "Activate"}
-                          </button>
-                          <button
-                            onClick={() => handleDeletePage(p.id)}
-                            className="text-[10px] font-medium text-red-400 hover:text-red-300 border border-red-900/50 px-2 py-1 transition-colors cursor-pointer"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2 bg-canvas border border-hairline px-2.5 py-1.5">
-                        <code className="flex-1 font-mono text-[11px] text-ink-soft truncate">
-                          {`${window.location.origin}${p.url}`}
-                        </code>
-                        <button
-                          onClick={() => handleCopyUrl(p.url, p.id)}
-                          className="shrink-0 text-[10px] font-medium text-primary hover:text-primary-hover transition-colors cursor-pointer"
-                        >
-                          {copiedId === p.id ? "Copied!" : "Copy"}
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div>
-                  <p className="text-xs text-ink-soft mb-4">
-                    Create a shareable subscription page to let customers subscribe to this plan.
-                  </p>
-                  <button
-                    onClick={handleCreatePage}
-                    disabled={createPage.isPending}
-                    className="bg-primary text-white hover:bg-primary-hover text-xs font-bold px-4 py-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                  >
-                    {createPage.isPending ? "Creating..." : "Create Subscription Page"}
-                  </button>
-                </div>
-              )}
-            </div>
+            <SubscriptionPagesList planId={planId} projectId={projectId} />
           </div>
         </div>
       </div>

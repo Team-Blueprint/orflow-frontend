@@ -10,8 +10,10 @@ export interface SubscriptionPageRead {
 }
 
 export interface SubscriptionPageWithPlanRead extends SubscriptionPageRead {
-  plan_name: string
-  url: string
+  plan_name: string;
+  url: string;
+  is_test: boolean;
+  environment: "TEST" | "LIVE";
 }
 
 export interface SubscriptionPageCreate {
