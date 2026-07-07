@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { formatAmount } from "@/lib/portal-data";
-import { LinkBroken, Lock } from "@solar-icons/react";
+import { LinkBroken, Lock, Copy } from "@solar-icons/react";
+import { useToast } from "@/components/webhooks/utils/toast";
 
 export const Route = createFileRoute("/subscribe/$code")({
   component: SubscribePage,
@@ -23,6 +24,12 @@ const intervalLabel: Record<string, string> = {
   yearly: "Yearly",
 };
 
+const NOMBA_TEST_CARDS = [
+  { cardNumber: "5434 6210 7425 2808", network: "Mastercard", outcome: "Approved" },
+  { cardNumber: "4000 0000 0000 2503", network: "Visa", outcome: "3DS required" },
+  { cardNumber: "5484 4972 1831 7651", network: "Mastercard", outcome: "Do not honor" },
+];
+
 function SubscribePage() {
   const { code } = Route.useParams();
   const { data: plan, isLoading, error } = useSubscriptionPage(code);
@@ -35,6 +42,12 @@ function SubscribePage() {
   const [errorMsg, setErrorMsg] = useState("");
   const [showCheckout, setShowCheckout] = useState(false);
   const [redirecting] = useState(false);
+  const toast = useToast();
+
+  const copyCardNumber = (cardNumber: string) => {
+    navigator.clipboard.writeText(cardNumber);
+    toast.success("Card number copied");
+  };
 
   if (isLoading) {
     return (
@@ -116,6 +129,40 @@ function SubscribePage() {
               subscription.
             </p>
           </div>
+          
+          {plan.is_test && (
+            <div className="border border-border bg-card p-4 w-full">
+              <h3 className="text-sm font-medium text-foreground mb-3">Test Card Reference</h3>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between text-muted-foreground">
+                  <span>Card Number</span>
+                  <span>Network</span>
+                  <span>Outcome</span>
+                </div>
+                {NOMBA_TEST_CARDS.map((card) => (
+                  <div key={card.cardNumber} className="flex justify-between text-foreground items-center gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs">{card.cardNumber.slice(-4)} ••••</span>
+                      <button
+                        type="button"
+                        onClick={() => copyCardNumber(card.cardNumber)}
+                        className="p-1 hover:bg-muted rounded transition-colors"
+                        aria-label="Copy full card number"
+                      >
+                        <Copy weight="Linear" className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                      </button>
+                    </div>
+                    <span className="text-xs">{card.network}</span>
+                    <span className="text-xs text-gray-600">{card.outcome}</span>
+                  </div>
+                ))}
+                <p className="text-xs text-muted-foreground mt-2">
+                  Use any 3-digit CVV and future expiry date. Enter card number to test different outcomes.
+                </p>
+              </div>
+            </div>
+          )}
+          
           <Button
             size="lg"
             className="w-full min-h-[44px]"
