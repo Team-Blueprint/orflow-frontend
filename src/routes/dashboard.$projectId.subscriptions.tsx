@@ -16,7 +16,7 @@ export const Route = createFileRoute("/dashboard/$projectId/subscriptions")({
   component: SubscriptionsPage,
 })
 
-const STATUS_FILTERS = ["all", "active", "past_due", "paused", "canceled", "trialing", "unpaid", "defaulted", "completed"] as const
+const STATUS_FILTERS = ["all", "incomplete", "incomplete_expired", "trialing", "active", "past_due", "unpaid", "paused", "canceled", "defaulted", "completed"] as const
 
 const STATUS_BADGE: Record<string, "success" | "destructive" | "muted" | "info"> = {
   active: "success",
@@ -505,11 +505,11 @@ function SlideOver({
     <DialogPrimitive.Root open={open} onOpenChange={(o) => { if (!o) onClose() }}>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay
-          className="fixed inset-0 z-40 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
+          className="fixed inset-0 z-[65] bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
         />
         <DialogPrimitive.Content
           className={cn(
-            "fixed inset-y-0 right-0 z-50 w-full max-w-md border-l border-hairline bg-paper shadow-xl",
+            "fixed inset-y-0 right-0 z-[70] w-full max-w-md border-l border-hairline bg-paper shadow-xl",
             "data-[state=open]:animate-in data-[state=closed]:animate-out",
             "data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right",
             "duration-200",

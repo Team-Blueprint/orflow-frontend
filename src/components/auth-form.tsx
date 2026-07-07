@@ -1,6 +1,6 @@
 import { type FormEvent, useState } from "react"
 import { Link, useNavigate } from "@tanstack/react-router"
-import { GithubIcon, LogoIcon } from "@/components/icons"
+import { LogoIcon } from "@/components/icons"
 import { useAuth } from "@/lib/auth"
 import { BASE_URL } from "@/api/apiClient"
 import { AxiosError } from "axios"
@@ -156,6 +156,7 @@ export function AuthForm({ mode }: AuthFormProps) {
           </div>
 
           <div className="flex flex-col gap-3">
+{/* Continue with GitHub - not yet implemented
             <a
               href="https://github.com/Team-Blueprint/orflow-backend"
               target="_blank"
@@ -165,6 +166,7 @@ export function AuthForm({ mode }: AuthFormProps) {
               <GithubIcon size={18} />
               Continue with GitHub
             </a>
+*/}
             <a
               href={`${BASE_URL}/v1/auth/google/login`}
               className="w-full bg-zinc-900/30 hover:bg-zinc-900/60 border border-hairline text-ink text-xs font-semibold py-3 flex items-center justify-center gap-3 cursor-pointer transition-colors"

@@ -25,6 +25,14 @@
       "destination": "https://orflow.mintlify.site/_mintlify/:match*"
     },
     {
+      "source": "/v1/:path*",
+      "destination": "https://orflow-backend.onrender.com/v1/:path*"
+    },
+    {
+      "source": "/api/:path*",
+      "destination": "https://orflow-backend.onrender.com/v1/:path*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

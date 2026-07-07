@@ -93,6 +93,8 @@ function WebhooksPage() {
   useEffect(() => {
     if (currentWebhookConfig) {
       setWebhookUrl(currentWebhookConfig.url);
+    } else {
+      setWebhookUrl("");
     }
   }, [currentWebhookConfig, projectId]);
 

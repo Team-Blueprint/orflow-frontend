@@ -30,9 +30,35 @@ interface PlanSubscription {
   id: string
   customer_id: string
   customer_name: string
+  customer_email: string
   status: string
   amount: number
   created_at: string
+}
+
+const SUB_STATUS_BADGE: Record<string, "success" | "destructive" | "muted" | "info"> = {
+  active: "success",
+  trialing: "info",
+  past_due: "destructive",
+  unpaid: "destructive",
+  paused: "info",
+  canceled: "muted",
+  defaulted: "destructive",
+  completed: "muted",
+  incomplete: "muted",
+  incomplete_expired: "muted",
+}
+
+function mapPlanSub(raw: any): PlanSubscription {
+  return {
+    id: raw.id,
+    customer_id: raw.customer_id,
+    customer_name: raw.customer?.name ?? raw.customer_name ?? "",
+    customer_email: raw.customer?.email ?? raw.customer_email ?? "",
+    status: raw.status,
+    amount: raw.plan?.amount ?? raw.amount,
+    created_at: raw.created_at,
+  }
 }
 
 export function PlanDetailPage() {
@@ -50,10 +76,10 @@ export function PlanDetailPage() {
 
   const { data: subscriptions = [], isLoading: isSubscriptionsLoading } = useQuery<PlanSubscription[]>({
     queryKey: ["plan-subscriptions", planId],
-    queryFn: () => apiClient.get<PlanSubscription[]>(
+    queryFn: () => apiClient.get<any[]>(
       ENDPOINTS.SUBSCRIPTIONS.LIST,
       { params: { plan_id: planId, limit: 5, offset: 0 } },
-    ).then(res => res.data),
+    ).then(res => res.data.map(mapPlanSub)),
     enabled: !!planId,
   })
 
@@ -293,22 +319,20 @@ export function PlanDetailPage() {
                       <tbody>
                         {displayedSubs.map((sub) => (
                           <tr key={sub.id} className="border-b border-hairline last:border-0 transition-colors hover:bg-midnight-soft/30">
-                            <td className="px-4 py-3 text-sm font-medium text-ink">{sub.customer_name}</td>
+                            <td className="px-4 py-3">
+                              <div className="text-sm font-medium text-ink">{sub.customer_name}</div>
+                              <div className="text-[11px] text-ink-soft truncate">{sub.customer_email}</div>
+                            </td>
                             <td className="px-4 py-3">
                               <Badge
-                                variant={
-                                  sub.status === "active" ? "success" :
-                                  sub.status === "past_due" ? "destructive" :
-                                  sub.status === "paused" ? "muted" :
-                                  "muted"
-                                }
+                                variant={SUB_STATUS_BADGE[sub.status] ?? "muted"}
                                 className="capitalize text-xs"
                               >
-                                {sub.status}
+                                {sub.status === "past_due" ? "Past Due" : sub.status === "incomplete_expired" ? "Expired" : sub.status}
                               </Badge>
                             </td>
                             <td className="px-4 py-3 text-xs text-ink-soft font-mono">
-                              {formatNaira(sub.amount)}
+                              {formatNaira(sub.amount ?? 0)}
                             </td>
                             <td className="px-4 py-3 text-xs text-ink-soft font-mono">
                               {new Date(sub.created_at).toLocaleDateString("en-US", {
@@ -327,20 +351,19 @@ export function PlanDetailPage() {
                     {displayedSubs.map((sub) => (
                       <div key={sub.id} className="border border-hairline bg-midnight-soft p-3">
                         <div className="flex items-start justify-between gap-2">
-                          <div className="text-sm font-medium text-ink">{sub.customer_name}</div>
+                          <div>
+                            <div className="text-sm font-medium text-ink">{sub.customer_name}</div>
+                            <div className="text-[11px] text-ink-soft truncate mt-0.5">{sub.customer_email}</div>
+                          </div>
                           <Badge
-                            variant={
-                              sub.status === "active" ? "success" :
-                              sub.status === "past_due" ? "destructive" :
-                              sub.status === "paused" ? "muted" : "muted"
-                            }
+                            variant={SUB_STATUS_BADGE[sub.status] ?? "muted"}
                             className="shrink-0 capitalize text-xs"
                           >
-                            {sub.status}
+                            {sub.status === "past_due" ? "Past Due" : sub.status === "incomplete_expired" ? "Expired" : sub.status}
                           </Badge>
                         </div>
                         <div className="mt-1 flex items-center gap-3 text-xs text-ink-soft">
-                          <span className="font-mono">{formatNaira(sub.amount)}</span>
+                          <span className="font-mono">{formatNaira(sub.amount ?? 0)}</span>
                           <span className="font-mono">
                             {new Date(sub.created_at).toLocaleDateString("en-US", {
                               month: "short", day: "numeric", year: "numeric",

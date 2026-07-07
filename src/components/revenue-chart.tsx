@@ -41,6 +41,34 @@ function RevenueChart({ data }: RevenueChartProps) {
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 })
   const svgRef = useRef<SVGSVGElement>(null)
 
+  const visibleLabels = useMemo(() => {
+    const total = data.length
+    if (total <= 14) return data
+    const step = Math.ceil(total / 7)
+    return data.filter((_, i) => i % step === 0 || i === total - 1)
+  }, [data])
+
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent<SVGSVGElement>) => {
+      const svg = svgRef.current
+      if (!svg) return
+      const rect = svg.getBoundingClientRect()
+      const scaleX = rect.width / CHART_WIDTH
+      const mousePlotX = (e.clientX - rect.left) / scaleX - PADDING.left
+      const idx = Math.round((mousePlotX / PLOT_W) * (data.length - 1))
+      const clamped = Math.max(0, Math.min(data.length - 1, idx))
+      setHoveredIdx(clamped)
+      setTooltipPos({ x: e.clientX - rect.left, y: e.clientY - rect.top })
+    },
+    [data.length],
+  )
+
+  const handleMouseLeave = useCallback(() => {
+    setHoveredIdx(null)
+  }, [])
+
+  const hovered = hoveredIdx !== null && hoveredIdx < data.length ? data[hoveredIdx] : null
+
   if (data.length === 0) {
     return (
       <div className="border border-hairline bg-paper p-4 sm:p-5 flex items-center justify-center h-56">
@@ -75,34 +103,6 @@ function RevenueChart({ data }: RevenueChartProps) {
   const yTickValues = Array.from({ length: yTicks + 1 }, (_, i) =>
     Math.round((maxRevenue / yTicks) * i),
   )
-
-  const visibleLabels = useMemo(() => {
-    const total = data.length
-    if (total <= 14) return data
-    const step = Math.ceil(total / 7)
-    return data.filter((_, i) => i % step === 0 || i === total - 1)
-  }, [data])
-
-  const handleMouseMove = useCallback(
-    (e: React.MouseEvent<SVGSVGElement>) => {
-      const svg = svgRef.current
-      if (!svg) return
-      const rect = svg.getBoundingClientRect()
-      const scaleX = rect.width / CHART_WIDTH
-      const mousePlotX = (e.clientX - rect.left) / scaleX - PADDING.left
-      const idx = Math.round((mousePlotX / PLOT_W) * (data.length - 1))
-      const clamped = Math.max(0, Math.min(data.length - 1, idx))
-      setHoveredIdx(clamped)
-      setTooltipPos({ x: e.clientX - rect.left, y: e.clientY - rect.top })
-    },
-    [data.length],
-  )
-
-  const handleMouseLeave = useCallback(() => {
-    setHoveredIdx(null)
-  }, [])
-
-  const hovered = hoveredIdx !== null ? data[hoveredIdx] : null
 
   return (
     <div className="border border-hairline bg-paper p-4 sm:p-5 relative select-none">
