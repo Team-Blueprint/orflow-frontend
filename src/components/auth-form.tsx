@@ -168,7 +168,7 @@ export function AuthForm({ mode }: AuthFormProps) {
             </a>
 */}
             <a
-              href={`${BASE_URL}/v1/auth/google/login`}
+              href={`${BASE_URL}/api/auth/google/login`}
               className="w-full bg-zinc-900/30 hover:bg-zinc-900/60 border border-hairline text-ink text-xs font-semibold py-3 flex items-center justify-center gap-3 cursor-pointer transition-colors"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none">

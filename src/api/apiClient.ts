@@ -1,4 +1,5 @@
 import axios from "axios";
+import { isTestMode } from "@/lib/environment";
 
 declare module "axios" {
   interface InternalAxiosRequestConfig {
@@ -31,6 +32,8 @@ apiClient.interceptors.request.use((config) => {
 
   const projectId = localStorage.getItem(LS_ACTIVE_PROJECT);
   if (projectId) config.headers.set("X-Project-Id", projectId);
+
+  if (isTestMode()) config.headers.set("X-Test-Mode", "true");
 
   const csrfToken = getCsrfToken();
   if (
