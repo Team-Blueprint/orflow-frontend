@@ -47,6 +47,7 @@ export interface PortalData {
 
 export interface SubscriptionPageData {
   code: string;
+  is_test: boolean;
   plan: {
     id: string;
     projectId: string;

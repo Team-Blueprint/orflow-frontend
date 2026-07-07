@@ -32,6 +32,7 @@ export interface PublicPageInfo {
   interval: string
   interval_count: number
   merchant_name: string
+  is_test: boolean
 }
 
 export interface PublicCheckoutResponse {

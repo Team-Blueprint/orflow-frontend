@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
+import { createContext, useContext, useState, useCallback, type ReactNode } from "react"
 
 const STORAGE_KEY = "orflow_env"
 
@@ -8,7 +8,7 @@ export function getStoredEnv(): EnvMode {
   if (typeof window === "undefined") return "live"
   const stored = localStorage.getItem(STORAGE_KEY)
   if (stored === "test" || stored === "live") return stored
-  return "live"
+  return "test"
 }
 
 export function setStoredEnv(mode: EnvMode): void {
@@ -30,20 +30,9 @@ const EnvContext = createContext<EnvContextValue | null>(null)
 export function EnvProvider({ children }: { children: ReactNode }) {
   const [mode, setModeState] = useState<EnvMode>(getStoredEnv)
 
-  const setMode = (newMode: EnvMode) => {
-    setStoredEnv(newMode)
-    setModeState(newMode)
-  }
-
-  useEffect(() => {
-    function handleStorage(e: StorageEvent) {
-      if (e.key === STORAGE_KEY) {
-        const val = e.newValue
-        if (val === "test" || val === "live") setModeState(val)
-      }
-    }
-    window.addEventListener("storage", handleStorage)
-    return () => window.removeEventListener("storage", handleStorage)
+  const setMode = useCallback((m: EnvMode) => {
+    setStoredEnv(m)
+    setModeState(m)
   }, [])
 
   return (
@@ -55,6 +44,6 @@ export function EnvProvider({ children }: { children: ReactNode }) {
 
 export function useEnv(): EnvContextValue {
   const ctx = useContext(EnvContext)
-  if (!ctx) throw new Error("useEnv must be used within an EnvProvider")
+  if (!ctx) throw new Error("useEnv must be used within EnvProvider")
   return ctx
 }

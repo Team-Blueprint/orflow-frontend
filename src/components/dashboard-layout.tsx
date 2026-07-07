@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useMemo, type ReactNode, type ElementType } from "react";
 import { Link, useLocation, useNavigate, useParams } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
+import { useEnv } from "@/lib/environment";
 import { HomeAngle } from "@solar-icons/react";
 import {
   ChartSquare,
@@ -45,6 +46,7 @@ const bottomNav: NavItem[] = [
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const { user, logout } = useAuth();
+  const { isTest } = useEnv();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [projectOpen, setProjectOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -164,7 +166,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </a>
         </div>
 
-        <div ref={mobileUserMenuRef} className="relative">
+        <div ref={mobileUserMenuRef} className="relative flex items-center gap-2">
+          <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 border leading-none select-none ${isTest ? "bg-amber-500/20 text-amber-400 border-amber-500/30" : "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"}`}>
+            {isTest ? "TEST" : "LIVE"}
+          </span>
           <button
             type="button"
             onClick={() => setUserMenuOpen((o) => !o)}
@@ -369,7 +374,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             </Link>
           </div>
 
-          <div ref={desktopUserMenuRef} className="relative">
+          <div ref={desktopUserMenuRef} className="relative flex items-center gap-2">
+            <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 border leading-none select-none ${isTest ? "bg-amber-500/20 text-amber-400 border-amber-500/30" : "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"}`}>
+              {isTest ? "TEST" : "LIVE"}
+            </span>
             <button
               type="button"
               onClick={() => setUserMenuOpen((o) => !o)}

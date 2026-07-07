@@ -107,8 +107,8 @@ function SubscribePage() {
             <div className="flex justify-between">
               <span className="text-muted-foreground">Customer</span>
               <span className="font-medium text-foreground">{name}</span>
-            </div>
-          </div>
+      </div>
+    </div>
           <div className="border border-border bg-muted/50 p-4 text-sm text-muted-foreground w-full">
             <p className="font-medium text-foreground mb-1">Secure Checkout</p>
             <p>
@@ -159,7 +159,16 @@ function SubscribePage() {
   }
 
   return (
-    <div className="lg:grid lg:grid-cols-2 lg:gap-10 lg:items-start">
+    <>
+      {plan.is_test && (
+        <div className="mb-6 border border-amber-500/30 bg-amber-500/10 px-4 py-3">
+          <p className="text-sm font-semibold text-amber-400">Test Mode</p>
+          <p className="text-xs text-amber-400/70 mt-0.5">
+            This is a test payment page. No real charges will be made.
+          </p>
+        </div>
+      )}
+      <div className="lg:grid lg:grid-cols-2 lg:gap-10 lg:items-start">
       {/* Left: merchant context + plan summary */}
       <div className="flex flex-col gap-6 mb-8 lg:mb-0 lg:sticky lg:top-4">
         <div>
@@ -236,6 +245,7 @@ function SubscribePage() {
           </div>
         </form>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

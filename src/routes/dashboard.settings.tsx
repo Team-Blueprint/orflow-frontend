@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router"
 import { AccountLayout } from "@/components/account-layout"
 import { apiClient } from "@/api/apiClient"
 import { AxiosError } from "axios"
+import { useEnv } from "@/lib/environment"
 
 interface ApiKeys {
   pk_test: string | null
@@ -29,6 +30,7 @@ export const Route = createFileRoute("/dashboard/settings")({
 })
 
 function AccountSettings() {
+  const env = useEnv()
   const [keys, setKeys] = useState<ApiKeys | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
@@ -244,6 +246,41 @@ function AccountSettings() {
             )
           })}
         </div>
+
+        <section className="mt-10 pt-10 border-t border-hairline">
+          <h2 className="text-sm font-semibold uppercase tracking-widest text-ink-soft">Environment</h2>
+          <div className="mt-4 border border-hairline bg-paper p-4 max-w-lg">
+            <div className="flex gap-1 p-0.5 bg-zinc-900/60 border border-hairline w-fit">
+              <button
+                type="button"
+                onClick={() => env.setMode("test")}
+                className={`px-4 py-1.5 text-xs font-semibold uppercase tracking-wider transition-colors cursor-pointer ${
+                  env.mode === "test"
+                    ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                    : "text-ink-soft hover:text-ink border border-transparent"
+                }`}
+              >
+                Test
+              </button>
+              <button
+                type="button"
+                onClick={() => env.setMode("live")}
+                className={`px-4 py-1.5 text-xs font-semibold uppercase tracking-wider transition-colors cursor-pointer ${
+                  env.mode === "live"
+                    ? "bg-green-500/20 text-green-400 border border-green-500/30"
+                    : "text-ink-soft hover:text-ink border border-transparent"
+                }`}
+              >
+                Live
+              </button>
+            </div>
+            <p className="mt-3 text-[11px] text-ink-soft leading-relaxed">
+              {env.mode === "test"
+                ? "Test payments without processing real transactions. All data is isolated from your live environment."
+                : "Charge real customers. Data in live mode is completely separate from sandbox data."}
+            </p>
+          </div>
+        </section>
 
         <section className="mt-10 pt-10 border-t border-hairline">
           <h2 className="text-sm font-semibold uppercase tracking-widest text-ink-soft">Account</h2>

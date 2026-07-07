@@ -103,6 +103,7 @@ export function useResumePortalSubscription(_token: string) {
 function mapPublicPageInfo(raw: PublicPageInfo): SubscriptionPageData {
   return {
     code: raw.id,
+    is_test: raw.is_test,
     plan: {
       id: raw.plan_id,
       projectId: "",

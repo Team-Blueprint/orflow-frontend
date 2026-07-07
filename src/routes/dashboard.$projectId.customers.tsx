@@ -3,8 +3,7 @@ import { createFileRoute, useParams } from "@tanstack/react-router"
 import { useCustomers } from "@/api/hooks/useCustomers"
 import { useDocumentTitle } from "@/hooks/useDocumentTitle"
 import { Input } from "@/components/ui/input"
-import { CreateCustomerModal } from "@/components/customers/create-customer-modal"
-
+ 
 export const Route = createFileRoute("/dashboard/$projectId/customers")({
   component: CustomersPage,
 })
@@ -13,7 +12,6 @@ function CustomersPage() {
   const { projectId } = useParams({ from: "/dashboard/$projectId/customers" })
   const [search, setSearch] = useState("")
   const [page, setPage] = useState(0)
-  const [createModalOpen, setCreateModalOpen] = useState(false)
   const limit = 15
 
   const { data: customersData, isLoading } = useCustomers(projectId, { offset: page * limit, limit })
@@ -43,13 +41,6 @@ function CustomersPage() {
             View and manage your customer base.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => setCreateModalOpen(true)}
-          className="btn-primary text-sm font-bold px-5 py-2.5 cursor-pointer"
-        >
-          New Customer
-        </button>
       </div>
 
       {/* Search */}
@@ -150,11 +141,6 @@ function CustomersPage() {
         </>
       )}
 
-      <CreateCustomerModal
-        open={createModalOpen}
-        onOpenChange={setCreateModalOpen}
-        projectId={projectId}
-      />
     </div>
   )
 }

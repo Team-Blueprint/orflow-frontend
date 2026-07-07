@@ -2,6 +2,7 @@ import { useState, useEffect, type FormEvent } from "react"
 import { createFileRoute, useParams, useNavigate } from "@tanstack/react-router"
 import { apiClient } from "@/api/apiClient"
 import { AxiosError } from "axios"
+import { useEnv } from "@/lib/environment"
 
 export const Route = createFileRoute("/dashboard/$projectId/settings")({
   component: ProjectSettings,
@@ -9,6 +10,7 @@ export const Route = createFileRoute("/dashboard/$projectId/settings")({
 
 function ProjectSettings() {
   const { projectId } = useParams({ from: "/dashboard/$projectId/settings" })
+  const env = useEnv()
   const navigate = useNavigate()
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
@@ -19,10 +21,6 @@ function ProjectSettings() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
-
-  const [env, setEnv] = useState(() => {
-    return localStorage.getItem(`orflow_env_${projectId}`) || "sandbox"
-  })
 
   useEffect(() => {
     apiClient.get(`/v1/projects/${projectId}`)
@@ -37,12 +35,6 @@ function ProjectSettings() {
         setLoading(false)
       })
   }, [projectId])
-
-  function toggleEnv() {
-    const next = env === "sandbox" ? "live" : "sandbox"
-    setEnv(next)
-    localStorage.setItem(`orflow_env_${projectId}`, next)
-  }
 
   async function handleSave(e: FormEvent) {
     e.preventDefault()
@@ -144,22 +136,35 @@ function ProjectSettings() {
               Environment
             </h2>
             <div className="mt-4 border border-hairline bg-paper p-4 max-w-lg">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-semibold text-ink">Mode</p>
-                  <p className="text-[11px] text-ink-soft mt-0.5">
-                    Currently in <strong className="text-ink">{env === "sandbox" ? "Sandbox" : "Live"}</strong> mode
-                  </p>
-                </div>
+              <div className="flex gap-1 p-0.5 bg-zinc-900/60 border border-hairline w-fit">
                 <button
                   type="button"
-                  onClick={toggleEnv}
-                  className="text-[11px] font-semibold px-3 py-2 border border-hairline bg-zinc-900/40 text-ink-soft hover:text-ink hover:border-hairline-strong transition-colors cursor-pointer"
-                  style={{ minHeight: 36 }}
+                  onClick={() => env.setMode("test")}
+                  className={`px-4 py-1.5 text-xs font-semibold uppercase tracking-wider transition-colors cursor-pointer ${
+                    env.mode === "test"
+                      ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                      : "text-ink-soft hover:text-ink border border-transparent"
+                  }`}
                 >
-                  Switch to {env === "sandbox" ? "Live" : "Sandbox"}
+                  Test
+                </button>
+                <button
+                  type="button"
+                  onClick={() => env.setMode("live")}
+                  className={`px-4 py-1.5 text-xs font-semibold uppercase tracking-wider transition-colors cursor-pointer ${
+                    env.mode === "live"
+                      ? "bg-green-500/20 text-green-400 border border-green-500/30"
+                      : "text-ink-soft hover:text-ink border border-transparent"
+                  }`}
+                >
+                  Live
                 </button>
               </div>
+              <p className="mt-3 text-[11px] text-ink-soft leading-relaxed">
+                {env.mode === "test"
+                  ? "Test payments without processing real transactions. All data is isolated from your live environment."
+                  : "Charge real customers. Data in live mode is completely separate from sandbox data."}
+              </p>
             </div>
           </section>
 

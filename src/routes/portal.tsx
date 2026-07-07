@@ -21,7 +21,7 @@ function PortalLayout() {
   return (
     <div className="flex min-h-dvh flex-col bg-background">
       <header className="flex h-20 items-center border-b border-border">
-        <div className="mx-auto flex w-full max-w-4xl items-center justify-between px-4 md:px-6">
+        <div className="mx-auto flex w-full max-w-3xl items-center justify-between px-6">
           <a href="/" className="flex items-center gap-2 cursor-pointer">
             <LogoIcon size={20} variant="orange" />
             <span className="text-sm font-semibold tracking-tight text-foreground">
