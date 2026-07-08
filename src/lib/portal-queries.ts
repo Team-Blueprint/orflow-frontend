@@ -106,7 +106,7 @@ function mapPublicPageInfo(raw: PublicPageInfo): SubscriptionPageData {
       interval: raw.interval,
     },
     merchant: {
-      name: raw.merchant_name,
+      name: raw.project_name,
     },
   }
 }

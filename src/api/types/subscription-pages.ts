@@ -33,7 +33,7 @@ export interface PublicPageInfo {
   currency: string
   interval: string
   interval_count: number
-  merchant_name: string
+  project_name: string
   is_test: boolean
 }
 
