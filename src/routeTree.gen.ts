@@ -26,6 +26,7 @@ import { Route as DashboardNewRouteImport } from './routes/dashboard.new'
 import { Route as DashboardProjectIdRouteImport } from './routes/dashboard.$projectId'
 import { Route as AdminReconciliationRouteImport } from './routes/admin.reconciliation'
 import { Route as DashboardProjectIdIndexRouteImport } from './routes/dashboard.$projectId.index'
+import { Route as PortalAccessIndexRouteImport } from './routes/portal.access.index'
 import { Route as PortalAccessTokenSlugRouteImport } from './routes/portal.access.$tokenSlug'
 import { Route as DashboardProjectIdSubscriptionsRouteImport } from './routes/dashboard.$projectId.subscriptions'
 import { Route as DashboardProjectIdSettingsRouteImport } from './routes/dashboard.$projectId.settings'
@@ -121,6 +122,11 @@ const DashboardProjectIdIndexRoute = DashboardProjectIdIndexRouteImport.update({
   path: '/',
   getParentRoute: () => DashboardProjectIdRoute,
 } as any)
+const PortalAccessIndexRoute = PortalAccessIndexRouteImport.update({
+  id: '/access/',
+  path: '/access/',
+  getParentRoute: () => PortalRoute,
+} as any)
 const PortalAccessTokenSlugRoute = PortalAccessTokenSlugRouteImport.update({
   id: '/access/$tokenSlug',
   path: '/access/$tokenSlug',
@@ -195,6 +201,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/$projectId/plans': typeof DashboardProjectIdPlansRouteWithChildren
   '/dashboard/$projectId/settings': typeof DashboardProjectIdSettingsRoute
   '/dashboard/$projectId/subscriptions': typeof DashboardProjectIdSubscriptionsRoute
+  '/portal/access/': typeof PortalAccessIndexRoute
   '/portal/access/$tokenSlug': typeof PortalAccessTokenSlugRoute
   '/dashboard/$projectId/': typeof DashboardProjectIdIndexRoute
   '/dashboard/$projectId/plans/$planId': typeof DashboardProjectIdPlansPlanIdRoute
@@ -219,6 +226,7 @@ export interface FileRoutesByTo {
   '/dashboard/$projectId/customers': typeof DashboardProjectIdCustomersRoute
   '/dashboard/$projectId/settings': typeof DashboardProjectIdSettingsRoute
   '/dashboard/$projectId/subscriptions': typeof DashboardProjectIdSubscriptionsRoute
+  '/portal/access': typeof PortalAccessIndexRoute
   '/portal/access/$tokenSlug': typeof PortalAccessTokenSlugRoute
   '/dashboard/$projectId': typeof DashboardProjectIdIndexRoute
   '/dashboard/$projectId/plans/$planId': typeof DashboardProjectIdPlansPlanIdRoute
@@ -248,6 +256,7 @@ export interface FileRoutesById {
   '/dashboard/$projectId/plans': typeof DashboardProjectIdPlansRouteWithChildren
   '/dashboard/$projectId/settings': typeof DashboardProjectIdSettingsRoute
   '/dashboard/$projectId/subscriptions': typeof DashboardProjectIdSubscriptionsRoute
+  '/portal/access/': typeof PortalAccessIndexRoute
   '/portal/access/$tokenSlug': typeof PortalAccessTokenSlugRoute
   '/dashboard/$projectId/': typeof DashboardProjectIdIndexRoute
   '/dashboard/$projectId/plans/$planId': typeof DashboardProjectIdPlansPlanIdRoute
@@ -278,6 +287,7 @@ export interface FileRouteTypes {
     | '/dashboard/$projectId/plans'
     | '/dashboard/$projectId/settings'
     | '/dashboard/$projectId/subscriptions'
+    | '/portal/access/'
     | '/portal/access/$tokenSlug'
     | '/dashboard/$projectId/'
     | '/dashboard/$projectId/plans/$planId'
@@ -302,6 +312,7 @@ export interface FileRouteTypes {
     | '/dashboard/$projectId/customers'
     | '/dashboard/$projectId/settings'
     | '/dashboard/$projectId/subscriptions'
+    | '/portal/access'
     | '/portal/access/$tokenSlug'
     | '/dashboard/$projectId'
     | '/dashboard/$projectId/plans/$planId'
@@ -330,6 +341,7 @@ export interface FileRouteTypes {
     | '/dashboard/$projectId/plans'
     | '/dashboard/$projectId/settings'
     | '/dashboard/$projectId/subscriptions'
+    | '/portal/access/'
     | '/portal/access/$tokenSlug'
     | '/dashboard/$projectId/'
     | '/dashboard/$projectId/plans/$planId'
@@ -470,6 +482,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardProjectIdIndexRouteImport
       parentRoute: typeof DashboardProjectIdRoute
     }
+    '/portal/access/': {
+      id: '/portal/access/'
+      path: '/access/'
+      fullPath: '/portal/access/'
+      preLoaderRoute: typeof PortalAccessIndexRouteImport
+      parentRoute: typeof PortalRoute
+    }
     '/portal/access/$tokenSlug': {
       id: '/portal/access/$tokenSlug'
       path: '/access/$tokenSlug'
@@ -595,6 +614,7 @@ interface PortalRouteChildren {
   PortalCallbackRoute: typeof PortalCallbackRoute
   PortalDashboardRoute: typeof PortalDashboardRoute
   PortalIndexRoute: typeof PortalIndexRoute
+  PortalAccessIndexRoute: typeof PortalAccessIndexRoute
   PortalAccessTokenSlugRoute: typeof PortalAccessTokenSlugRoute
 }
 
@@ -602,6 +622,7 @@ const PortalRouteChildren: PortalRouteChildren = {
   PortalCallbackRoute: PortalCallbackRoute,
   PortalDashboardRoute: PortalDashboardRoute,
   PortalIndexRoute: PortalIndexRoute,
+  PortalAccessIndexRoute: PortalAccessIndexRoute,
   PortalAccessTokenSlugRoute: PortalAccessTokenSlugRoute,
 }
 

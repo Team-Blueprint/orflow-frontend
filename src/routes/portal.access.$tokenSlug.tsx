@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { usePortalVerifyAccess } from "@/lib/portal-queries";
 import { setPortalToken, setPortalSlug } from "@/lib/portal-auth";
@@ -12,13 +12,15 @@ export const Route = createFileRoute("/portal/access/$tokenSlug")({
 
 function PortalAccessPage() {
   const { tokenSlug } = Route.useParams();
+  const { pin: queryPin } = Route.useSearch() as { pin?: string };
   const navigate = useNavigate();
   const verify = usePortalVerifyAccess();
-  const [pin, setPin] = useState("");
+  const [pin, setPin] = useState(queryPin ?? "");
   const [error, setError] = useState("");
+  const submittedRef = useRef(false);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleSubmit(e?: React.FormEvent) {
+    if (e) e.preventDefault();
     setError("");
 
     if (pin.length < 6) {
@@ -35,6 +37,16 @@ function PortalAccessPage() {
       setError("Invalid PIN. Check your email for the correct PIN.");
     }
   }
+
+  useEffect(() => {
+    if (queryPin && queryPin.length === 6 && !submittedRef.current) {
+      submittedRef.current = true;
+      const timer = setTimeout(() => {
+        handleSubmit();
+      }, 400);
+      return () => clearTimeout(timer);
+    }
+  }, [queryPin]);
 
   return (
     <div className="flex min-h-[60dvh] items-center justify-center px-6">
