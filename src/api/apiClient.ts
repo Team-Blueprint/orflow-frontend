@@ -128,6 +128,9 @@ export function setActiveProjectId(id: string | null) {
   } else {
     localStorage.removeItem(LS_ACTIVE_PROJECT);
   }
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("orflow-project-changed"))
+  }
 }
 
 export function getActiveProjectId(): string | null {
