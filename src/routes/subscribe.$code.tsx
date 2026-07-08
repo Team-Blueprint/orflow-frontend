@@ -86,8 +86,8 @@ function SubscribePage() {
 
   if (showCheckout) {
     return (
-      <div className="border border-border bg-card p-8 max-w-lg mx-auto">
-        <div className="flex flex-col items-center gap-4 py-6 text-center">
+      <div className="border border-border bg-card max-lg:border-0 max-lg:bg-transparent max-lg:p-0 p-8 max-w-lg mx-auto">
+        <div className="flex flex-col items-center gap-4 max-lg:px-4 max-lg:pt-4 pb-4 text-center">
           <Lock weight="BoldDuotone" className="h-12 w-12 text-primary" />
           <div>
             <h1 className="text-lg font-semibold tracking-tight text-foreground">
@@ -97,8 +97,7 @@ function SubscribePage() {
               Secure payment page
             </p>
           </div>
-          {" "}
-          <div className="w-full bg-muted p-4 text-left text-sm space-y-2">
+          <div className="w-full bg-muted max-lg:p-3 p-4 text-left text-sm space-y-2">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Plan</span>
               <span className="font-medium text-foreground">
@@ -120,9 +119,9 @@ function SubscribePage() {
             <div className="flex justify-between">
               <span className="text-muted-foreground">Customer</span>
               <span className="font-medium text-foreground">{name}</span>
+        </div>
       </div>
-    </div>
-          <div className="border border-border bg-muted/50 p-4 text-sm text-muted-foreground w-full">
+          <div className="border border-border bg-muted/50 max-lg:border-0 max-lg:p-3 p-4 text-sm text-muted-foreground w-full">
             <p className="font-medium text-foreground mb-1">Secure Checkout</p>
             <p>
               You will be redirected to a secure payment page to complete your
@@ -131,7 +130,7 @@ function SubscribePage() {
           </div>
           
           {plan.is_test && (
-            <div className="border border-border bg-card p-4 w-full">
+            <div className="border border-border bg-card max-lg:border-0 max-lg:bg-muted/30 max-lg:p-3 p-4 w-full">
               <h3 className="text-sm font-medium text-foreground mb-3">Test Card Reference</h3>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between text-muted-foreground">
@@ -163,7 +162,7 @@ function SubscribePage() {
             </div>
           )}
 
-          <div className="border border-border bg-primary/5 p-4 w-full text-left">
+          <div className="border border-border bg-primary/5 max-lg:border-0 max-lg:p-3 p-4 w-full text-left">
             <p className="text-xs font-medium text-foreground">After payment — portal access</p>
             <p className="mt-1 text-xs text-muted-foreground">
               Check your email for a 6-digit PIN to access your self-service portal where you can manage your subscription, view payment history, and update your card.
@@ -216,9 +215,9 @@ function SubscribePage() {
     <>
       {plan.is_test && (
         <div className="mb-6 border border-amber-500/30 bg-amber-500/10 px-4 py-3">
-          <p className="text-sm font-semibold text-amber-400">Test Mode</p>
-          <p className="text-xs text-amber-400/70 mt-0.5">
-            This is a test payment page. No real charges will be made.
+          <p className="text-sm font-semibold text-amber-800">Test Mode</p>
+          <p className="text-xs text-amber-700 mt-0.5">
+            Test Mode: This is a test payment page. No real charges will be made. Do not share or send this URL to live customers.
           </p>
         </div>
       )}
@@ -232,7 +231,7 @@ function SubscribePage() {
           <p className="text-xs text-muted-foreground">via Orflow</p>
         </div>
 
-        <div className="border border-border bg-card p-6">
+        <div className="border border-border bg-card max-lg:border-0 max-lg:bg-transparent max-lg:p-0 p-6">
           <div className="mb-3">
             <span className="font-mono text-2xl font-bold tabular-nums text-foreground">
               NGN {formatAmount(plan.plan.amount)}
@@ -258,7 +257,7 @@ function SubscribePage() {
       </div>
 
       {/* Right: form */}
-      <div className="border border-border bg-card p-6">
+      <div className="border border-border bg-card max-lg:border-0 max-lg:bg-transparent max-lg:p-0 p-6">
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="sub-name">Full name</Label>
