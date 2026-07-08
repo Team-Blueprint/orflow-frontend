@@ -20,6 +20,7 @@ import { Route as PortalIndexRouteImport } from './routes/portal.index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
 import { Route as SubscribeCodeRouteImport } from './routes/subscribe.$code'
 import { Route as PortalDashboardRouteImport } from './routes/portal.dashboard'
+import { Route as PortalCallbackRouteImport } from './routes/portal.callback'
 import { Route as DashboardSettingsRouteImport } from './routes/dashboard.settings'
 import { Route as DashboardNewRouteImport } from './routes/dashboard.new'
 import { Route as DashboardProjectIdRouteImport } from './routes/dashboard.$projectId'
@@ -88,6 +89,11 @@ const SubscribeCodeRoute = SubscribeCodeRouteImport.update({
 const PortalDashboardRoute = PortalDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalCallbackRoute = PortalCallbackRouteImport.update({
+  id: '/callback',
+  path: '/callback',
   getParentRoute: () => PortalRoute,
 } as any)
 const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
@@ -179,6 +185,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/$projectId': typeof DashboardProjectIdRouteWithChildren
   '/dashboard/new': typeof DashboardNewRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
+  '/portal/callback': typeof PortalCallbackRoute
   '/portal/dashboard': typeof PortalDashboardRoute
   '/subscribe/$code': typeof SubscribeCodeRoute
   '/dashboard/': typeof DashboardIndexRoute
@@ -203,6 +210,7 @@ export interface FileRoutesByTo {
   '/admin/reconciliation': typeof AdminReconciliationRoute
   '/dashboard/new': typeof DashboardNewRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
+  '/portal/callback': typeof PortalCallbackRoute
   '/portal/dashboard': typeof PortalDashboardRoute
   '/subscribe/$code': typeof SubscribeCodeRoute
   '/dashboard': typeof DashboardIndexRoute
@@ -230,6 +238,7 @@ export interface FileRoutesById {
   '/dashboard/$projectId': typeof DashboardProjectIdRouteWithChildren
   '/dashboard/new': typeof DashboardNewRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
+  '/portal/callback': typeof PortalCallbackRoute
   '/portal/dashboard': typeof PortalDashboardRoute
   '/subscribe/$code': typeof SubscribeCodeRoute
   '/dashboard/': typeof DashboardIndexRoute
@@ -259,6 +268,7 @@ export interface FileRouteTypes {
     | '/dashboard/$projectId'
     | '/dashboard/new'
     | '/dashboard/settings'
+    | '/portal/callback'
     | '/portal/dashboard'
     | '/subscribe/$code'
     | '/dashboard/'
@@ -283,6 +293,7 @@ export interface FileRouteTypes {
     | '/admin/reconciliation'
     | '/dashboard/new'
     | '/dashboard/settings'
+    | '/portal/callback'
     | '/portal/dashboard'
     | '/subscribe/$code'
     | '/dashboard'
@@ -309,6 +320,7 @@ export interface FileRouteTypes {
     | '/dashboard/$projectId'
     | '/dashboard/new'
     | '/dashboard/settings'
+    | '/portal/callback'
     | '/portal/dashboard'
     | '/subscribe/$code'
     | '/dashboard/'
@@ -414,6 +426,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/portal/dashboard'
       preLoaderRoute: typeof PortalDashboardRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/portal/callback': {
+      id: '/portal/callback'
+      path: '/callback'
+      fullPath: '/portal/callback'
+      preLoaderRoute: typeof PortalCallbackRouteImport
       parentRoute: typeof PortalRoute
     }
     '/dashboard/settings': {
@@ -573,12 +592,14 @@ const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
 )
 
 interface PortalRouteChildren {
+  PortalCallbackRoute: typeof PortalCallbackRoute
   PortalDashboardRoute: typeof PortalDashboardRoute
   PortalIndexRoute: typeof PortalIndexRoute
   PortalAccessTokenSlugRoute: typeof PortalAccessTokenSlugRoute
 }
 
 const PortalRouteChildren: PortalRouteChildren = {
+  PortalCallbackRoute: PortalCallbackRoute,
   PortalDashboardRoute: PortalDashboardRoute,
   PortalIndexRoute: PortalIndexRoute,
   PortalAccessTokenSlugRoute: PortalAccessTokenSlugRoute,
