@@ -144,7 +144,7 @@ bun run preview
 | `VITE_API_BASE_URL` | `http://localhost:8000` | Backend API URL |
 | `VITE_NOMBA_CLIENT_ID` | — | Nomba client ID for card-update SDK |
 | `VITE_NOMBA_ACCOUNT_ID` | — | Nomba account ID for card-update SDK |
-| `VITE_RECONCILIATION_ADMINS` | — | Comma-separated emails with reconciliation access |
+| `VITE_RECONCILIATION_ADMINS` | — | Comma-separated emails with reconciliation access. This is handled via env var because Orflow does not yet have a dedicated admin authentication system. A future admin roles implementation will replace this. |
 
 ### Solar-icons note
 
