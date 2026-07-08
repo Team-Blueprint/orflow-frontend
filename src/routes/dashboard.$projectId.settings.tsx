@@ -14,6 +14,7 @@ function ProjectSettings() {
   const navigate = useNavigate()
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
+  const [defaultCallbackUrl, setDefaultCallbackUrl] = useState("")
   const [originalName, setOriginalName] = useState("")
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -27,6 +28,7 @@ function ProjectSettings() {
       .then((res) => {
         setName(res.data.name)
         setDescription(res.data.description || "")
+        setDefaultCallbackUrl(res.data.default_callback_url || "")
         setOriginalName(res.data.name)
         setLoading(false)
       })
@@ -45,6 +47,7 @@ function ProjectSettings() {
       await apiClient.patch(`/v1/projects/${projectId}/update`, {
         name,
         description: description || null,
+        default_callback_url: defaultCallbackUrl || null,
       })
       setOriginalName(name)
       setSuccess("Project updated")
@@ -113,6 +116,23 @@ function ProjectSettings() {
                 rows={3}
                 className="w-full bg-zinc-900/40 border border-hairline text-sm text-ink px-4 py-3 placeholder:text-zinc-600 outline-none focus:border-hairline-strong transition-colors resize-none"
               />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="callback" className="text-xs font-bold uppercase tracking-wider text-ink-soft">
+                Default callback URL
+              </label>
+              <input
+                id="callback"
+                type="url"
+                value={defaultCallbackUrl}
+                onChange={(e) => setDefaultCallbackUrl(e.target.value)}
+                placeholder="https://example.com/payment/callback"
+                className="w-full bg-zinc-900/40 border border-hairline text-sm text-ink px-4 py-3 placeholder:text-zinc-600 outline-none focus:border-hairline-strong transition-colors"
+              />
+              <p className="text-[11px] text-ink-soft leading-relaxed">
+                Used when creating subscriptions via API without providing a callback URL. Subscription pages always redirect customers to the Orflow portal.
+              </p>
             </div>
 
             {error && (
