@@ -30,6 +30,39 @@ const NOMBA_TEST_CARDS = [
   { cardNumber: "5484 4972 1831 7651", network: "Mastercard", outcome: "Do not honor" },
 ];
 
+function getCheckoutRedirectUrl(checkoutLink: string, orderReference?: string) {
+  try {
+    const checkoutUrl = new URL(checkoutLink);
+    const isSandboxCheckout = checkoutUrl.hostname.toLowerCase().includes("sandbox");
+    if (!isSandboxCheckout) return checkoutLink;
+
+    const callbackUrl = new URL("/portal/callback", window.location.origin);
+    if (orderReference) {
+      callbackUrl.searchParams.set("orderReference", orderReference);
+    }
+    const callbackHref = callbackUrl.toString();
+
+    const callbackParamNames = [
+      "callbackUrl",
+      "callback_url",
+      "redirectUrl",
+      "redirect_url",
+      "returnUrl",
+      "return_url",
+    ];
+
+    callbackParamNames.forEach((name) => {
+      if (!checkoutUrl.searchParams.has(name)) {
+        checkoutUrl.searchParams.set(name, callbackHref);
+      }
+    });
+
+    return checkoutUrl.toString();
+  } catch {
+    return checkoutLink;
+  }
+}
+
 function SubscribePage() {
   const { code } = Route.useParams();
   const { data: plan, isLoading, error } = useSubscriptionPage(code);
@@ -176,7 +209,10 @@ function SubscribePage() {
               try {
                 const result = await createSub.mutateAsync({ name, email });
                 if (result.checkoutLink) {
-                  window.location.href = result.checkoutLink;
+                  window.location.href = getCheckoutRedirectUrl(
+                    result.checkoutLink,
+                    result.orderReference,
+                  );
                 }
               } catch {
                 setErrorMsg("Something went wrong. Please try again.");
