@@ -11,7 +11,7 @@ export function useDiscrepancies(params: DiscrepancyFilterParams) {
       const qp: Record<string, string> = { page: String(page), per_page: String(per_page) }
       if (run_id) qp.run_id = run_id
       if (discrepancy_type) qp.discrepancy_type = discrepancy_type
-      if (resolved !== "") qp.resolved = String(resolved)
+      if (resolved != null && resolved !== "") qp.resolved = String(resolved)
       const res = await apiClient.get<ReconciliationDiscrepancyPage>(
         ENDPOINTS.RECONCILIATION.DISCREPANCIES.LIST,
         { params: qp },

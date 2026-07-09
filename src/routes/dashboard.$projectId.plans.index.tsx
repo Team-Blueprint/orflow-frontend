@@ -6,6 +6,7 @@ import { ENDPOINTS } from "@/api/ENDPOINTS"
 import { PlansTable, NewPlanModal } from "@/components/plans"
 import { useDocumentTitle } from "@/hooks/useDocumentTitle"
 import { PlansTableSkeleton } from "@/components/skeletons/plans-table-skeleton"
+import { Refresh } from "@/lib/icons"
 
 export const Route = createFileRoute("/dashboard/$projectId/plans/")({
   component: PlansPage,
@@ -15,7 +16,7 @@ function PlansPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const { projectId } = useParams({ from: "/dashboard/$projectId/plans/" })
 
-  const { data: plans = [], isLoading } = useQuery({
+  const { data: plans = [], isLoading, refetch } = useQuery({
     queryKey: ["plans", projectId],
     queryFn: () =>
       apiClient.get(ENDPOINTS.PLANS.LIST).then((res) => res.data),
@@ -32,13 +33,23 @@ function PlansPage() {
             Define pricing tiers for your workspace.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => setModalOpen(true)}
-          className="btn-primary text-sm font-bold px-5 py-2.5 cursor-pointer"
-        >
-          New plan
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => refetch()}
+            className="border border-hairline bg-canvas px-3 py-2.5 text-ink-soft hover:text-ink hover:bg-midnight-soft transition-colors cursor-pointer"
+            aria-label="Refresh"
+          >
+            <Refresh className="w-4 h-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setModalOpen(true)}
+            className="btn-primary text-sm font-bold px-5 py-2.5 cursor-pointer"
+          >
+            New plan
+          </button>
+        </div>
       </div>
 
       {isLoading ? (

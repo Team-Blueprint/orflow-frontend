@@ -3,6 +3,7 @@ import { createFileRoute, useParams } from "@tanstack/react-router"
 import { useCustomers } from "@/api/hooks/useCustomers"
 import { useDocumentTitle } from "@/hooks/useDocumentTitle"
 import { Input } from "@/components/ui/input"
+import { Refresh } from "@/lib/icons"
  
 export const Route = createFileRoute("/dashboard/$projectId/customers")({
   component: CustomersPage,
@@ -14,7 +15,7 @@ function CustomersPage() {
   const [page, setPage] = useState(0)
   const limit = 15
 
-  const { data: customersData, isLoading } = useCustomers(projectId, { offset: page * limit, limit })
+  const { data: customersData, isLoading, refetch } = useCustomers(projectId, { offset: page * limit, limit })
 
   const filtered = useMemo(() => {
     const raw = customersData?.data ?? []
@@ -41,6 +42,14 @@ function CustomersPage() {
             View and manage your customer base.
           </p>
         </div>
+        <button
+          type="button"
+          onClick={() => refetch()}
+          className="border border-hairline bg-canvas px-3 py-2.5 text-ink-soft hover:text-ink hover:bg-midnight-soft transition-colors cursor-pointer"
+          aria-label="Refresh"
+        >
+          <Refresh className="w-4 h-4" />
+        </button>
       </div>
 
       {/* Search */}

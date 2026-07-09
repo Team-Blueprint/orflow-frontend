@@ -7,6 +7,7 @@ import { RevenueChart } from "@/components/revenue-chart"
 import { TimeRangeSelector } from "@/components/time-range-selector"
 import { AnalyticsSkeleton } from "@/components/skeletons/analytics-skeleton"
 import { formatNaira } from "@/lib/currency"
+import { Refresh } from "@/lib/icons"
 
 export const Route = createFileRoute("/dashboard/$projectId/")({
   component: Overview,
@@ -23,18 +24,28 @@ function Overview() {
   useDocumentTitle("Overview | Orflow")
   const { projectId } = useParams({ from: "/dashboard/$projectId/" })
   const [days, setDays] = useState(30)
-  const { data, isLoading } = useAnalytics(projectId, days)
+  const { data, isLoading, refetch } = useAnalytics(projectId, days)
 
   const analytics = data ?? ZEROED_ANALYTICS
   const { summary, revenue_chart } = analytics
 
   return (
     <div className="p-4 sm:px-8 sm:pt-4 sm:pb-8">
-      <div className="mb-5 sm:mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold text-ink tracking-tight">Overview</h1>
-        <p className="text-xs sm:text-sm text-ink-soft mt-1 sm:mt-1.5">
-          Analytics and activity for this workspace.
-        </p>
+      <div className="flex items-center justify-between mb-5 sm:mb-6">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-ink tracking-tight">Overview</h1>
+          <p className="text-xs sm:text-sm text-ink-soft mt-1 sm:mt-1.5">
+            Analytics and activity for this workspace.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => refetch()}
+          className="border border-hairline bg-canvas px-3 py-2.5 text-ink-soft hover:text-ink hover:bg-midnight-soft transition-colors cursor-pointer"
+          aria-label="Refresh"
+        >
+          <Refresh className="w-4 h-4" />
+        </button>
       </div>
 
       {isLoading ? (

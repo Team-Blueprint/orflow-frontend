@@ -29,7 +29,7 @@ export function AccountLayout({ children, breadcrumb }: AccountLayoutProps) {
   return (
     <div className="flex min-h-screen flex-col bg-canvas">
       <header className="h-16 w-full bg-canvas/80 backdrop-blur-md border-b border-zinc-800 z-50">
-        <div className="mx-auto flex h-full w-full max-w-3xl items-center justify-between px-4 sm:px-8">
+        <div className="mx-auto flex h-full w-full max-w-5xl items-center justify-between px-4 sm:px-8">
           <div className="flex items-center gap-2">
             {breadcrumb && breadcrumb !== "Dashboard" ? (
               <>

@@ -15,6 +15,7 @@ import { WebhookIcon, LogoIcon } from "@/components/icons";
 import { cn } from "@/lib/utils";
 import { setActiveProjectId } from "@/api/apiClient";
 import { useProjects } from "@/api/hooks/useProjects";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface NavItem {
   label: string;
@@ -59,11 +60,22 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const { projectId } = useParams({ strict: false });
 
   const { data: projects, isLoading: isProjectsLoading, error: projectsError } = useProjects();
+  const queryClient = useQueryClient();
 
   const navigateRef = useRef(navigate);
   useEffect(() => {
     navigateRef.current = navigate;
   }, [navigate]);
+
+  useEffect(() => {
+    queryClient.invalidateQueries();
+  }, [isTest]);
+
+  useEffect(() => {
+    if (projectId) {
+      queryClient.invalidateQueries();
+    }
+  }, [projectId]);
 
   const currentProject = useMemo<Project | null>(() => {
     if (!projects?.length || !projectId) return null;
@@ -89,7 +101,15 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   function selectProject(p: Project) {
     setActiveProjectId(p.id);
     setProjectOpen(false);
-    navigate({ to: `/dashboard/${p.id}` as any });
+
+    const base = `/dashboard/${projectId}`;
+    const cur = location.pathname;
+    if (cur.startsWith(base)) {
+      const rest = cur.slice(base.length);
+      navigate({ to: `/dashboard/${p.id}${rest}` as any, replace: true });
+    } else {
+      navigate({ to: `/dashboard/${p.id}` as any });
+    }
   }
 
   useEffect(() => {

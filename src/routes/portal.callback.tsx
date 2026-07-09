@@ -46,6 +46,7 @@ function PortalCallbackPage() {
           navigate({
             to: "/portal/access/$tokenSlug",
             params: { tokenSlug: res.data.portal_token_slug },
+            search: { customer_name: res.data.customer_name ?? undefined } as any,
             replace: true,
           })
         } else if (res.data.success) {
@@ -88,7 +89,7 @@ function PortalCallbackPage() {
             <CheckCircle weight="BoldDuotone" className="h-8 w-8 text-emerald-500" />
           </div>
           <h1 className="text-lg font-semibold tracking-tight text-foreground">
-            Payment successful!
+            Payment successful{state.name ? `, ${state.name}` : ""}!
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
             Check your email for a 6-digit PIN to access your self-service portal.

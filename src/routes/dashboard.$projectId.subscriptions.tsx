@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog as DialogPrimitive } from "radix-ui"
-import { ChartSquare } from "@/lib/icons"
+import { ChartSquare, Refresh } from "@/lib/icons"
 import { useToast } from "@/components/webhooks/utils/toast"
 
 export const Route = createFileRoute("/dashboard/$projectId/subscriptions")({
@@ -38,7 +38,7 @@ function SubscriptionsPage() {
   const [activeId, setActiveId] = useState<string | null>(null)
   const [mobileOpen, setMobileOpen] = useState(false)
 
-  const { data: subscriptions = [], isLoading } = useSubscriptions(projectId)
+  const { data: subscriptions = [], isLoading, refetch } = useSubscriptions(projectId)
   const cancelMutation = useCancelSubscription(projectId)
   const pauseMutation = usePauseSubscription(projectId)
   const resumeMutation = useResumeSubscription(projectId)
@@ -115,11 +115,21 @@ function SubscriptionsPage() {
 
   return (
     <div className="p-4 sm:px-8 sm:pt-4 sm:pb-8">
-      <div className="mb-5 sm:mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold text-ink tracking-tight">Subscriptions</h1>
-        <p className="text-xs sm:text-sm text-ink-soft mt-1 sm:mt-1.5">
-          Monitor and manage all active subscriptions across your plans.
-        </p>
+      <div className="flex items-center justify-between mb-5 sm:mb-6">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-ink tracking-tight">Subscriptions</h1>
+          <p className="text-xs sm:text-sm text-ink-soft mt-1 sm:mt-1.5">
+            Monitor and manage all active subscriptions across your plans.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => refetch()}
+          className="border border-hairline bg-canvas px-3 py-2.5 text-ink-soft hover:text-ink hover:bg-midnight-soft transition-colors cursor-pointer"
+          aria-label="Refresh"
+        >
+          <Refresh className="w-4 h-4" />
+        </button>
       </div>
 
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
@@ -271,7 +281,7 @@ function SubscriptionTable({
               </Badge>
             </td>
             <td className="px-4 py-3 text-xs text-ink-soft font-mono">
-              {new Date(sub.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+              {new Date(sub.current_period_start ?? sub.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
             </td>
             <td className="px-4 py-3 text-xs text-ink-soft font-mono">
               {sub.current_period_end
@@ -404,7 +414,7 @@ function SubscriptionDetailPanel({
                 {sub.status === "past_due" ? "Past Due" : sub.status === "incomplete_expired" ? "Expired" : sub.status}
               </Badge>
             </DetailRow>
-            <DetailRow label="Started" value={fmtDate(sub.created_at)} />
+            <DetailRow label="Started" value={fmtDate(sub.current_period_start ?? sub.created_at)} />
             <DetailRow label="Next billing" value={fmtDate(sub.current_period_end)} />
             {sub.trial_end && <DetailRow label="Trial ends" value={fmtDate(sub.trial_end)} />}
             {sub.canceled_at && <DetailRow label="Canceled" value={fmtDate(sub.canceled_at)} />}
@@ -414,41 +424,43 @@ function SubscriptionDetailPanel({
           </div>
         </div>
 
-        <div>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-ink-soft mb-3">Quick Actions</p>
-          <div className="flex flex-col gap-2">
-            {(sub.status === "active" || sub.status === "past_due") && (
-              <button
-                type="button"
-                onClick={() => onPause(sub)}
-                disabled={isMutating}
-                className="w-full border border-hairline bg-canvas px-4 py-2.5 text-xs font-medium text-ink hover:bg-midnight-soft transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-              >
-                Pause subscription
-              </button>
-            )}
-            {sub.status === "paused" && (
-              <button
-                type="button"
-                onClick={() => onResume(sub)}
-                disabled={isMutating}
-                className="w-full border border-hairline bg-canvas px-4 py-2.5 text-xs font-medium text-ink hover:bg-midnight-soft transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-              >
-                Resume subscription
-              </button>
-            )}
-            {(sub.status === "active" || sub.status === "paused" || sub.status === "past_due") && (
-              <button
-                type="button"
-                onClick={() => onCancel(sub)}
-                disabled={isMutating}
-                className="w-full bg-red-950/40 border border-red-900/50 px-4 py-2.5 text-xs font-medium text-red-400 hover:bg-red-950/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-              >
-                Cancel subscription
-              </button>
-            )}
+        {(sub.status === "active" || sub.status === "past_due" || sub.status === "paused") && (
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-ink-soft mb-3">Quick Actions</p>
+            <div className="flex flex-col gap-2">
+              {(sub.status === "active" || sub.status === "past_due") && (
+                <button
+                  type="button"
+                  onClick={() => onPause(sub)}
+                  disabled={isMutating}
+                  className="w-full border border-hairline bg-canvas px-4 py-2.5 text-xs font-medium text-ink hover:bg-midnight-soft transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                >
+                  Pause subscription
+                </button>
+              )}
+              {sub.status === "paused" && (
+                <button
+                  type="button"
+                  onClick={() => onResume(sub)}
+                  disabled={isMutating}
+                  className="w-full border border-hairline bg-canvas px-4 py-2.5 text-xs font-medium text-ink hover:bg-midnight-soft transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                >
+                  Resume subscription
+                </button>
+              )}
+              {(sub.status === "active" || sub.status === "paused" || sub.status === "past_due") && (
+                <button
+                  type="button"
+                  onClick={() => onCancel(sub)}
+                  disabled={isMutating}
+                  className="w-full bg-red-950/40 border border-red-900/50 px-4 py-2.5 text-xs font-medium text-red-400 hover:bg-red-950/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                >
+                  Cancel subscription
+                </button>
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
         {auditLog.length > 0 && (
           <div>

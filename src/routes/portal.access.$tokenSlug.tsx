@@ -12,7 +12,7 @@ export const Route = createFileRoute("/portal/access/$tokenSlug")({
 
 function PortalAccessPage() {
   const { tokenSlug } = Route.useParams();
-  const { pin: queryPin } = Route.useSearch() as { pin?: string };
+  const { pin: queryPin, customer_name: customerName } = Route.useSearch() as { pin?: string; customer_name?: string };
   const navigate = useNavigate();
   const verify = usePortalVerifyAccess();
   const [pin, setPin] = useState(queryPin ?? "");
@@ -57,10 +57,10 @@ function PortalAccessPage() {
               <Lock weight="BoldDuotone" className="h-6 w-6 text-primary" />
             </div>
             <h1 className="text-lg font-semibold tracking-tight text-foreground">
-              Enter your access PIN
+              {customerName ? `Welcome, ${customerName}` : "Enter your access PIN"}
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              We sent a 6-digit PIN to your email
+              {customerName ? `Enter the 6-digit PIN sent to your email` : `We sent a 6-digit PIN to your email`}
             </p>
           </div>
 
