@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatAmount } from "@/lib/portal-data";
 import type { PortalPaymentRead } from "@/lib/portal-data";
-import { Card, DangerTriangle, CheckCircle, Eye } from "@solar-icons/react";
+import { Card, DangerTriangle, Eye } from "@solar-icons/react";
 
 export const Route = createFileRoute("/portal/dashboard")({
   component: PortalDashboardPage,
@@ -57,7 +57,6 @@ function PortalDashboardPage() {
   const updatePin = useUpdatePortalPin();
 
   const [cardUpdating, setCardUpdating] = useState(false);
-  const [cardUpdated, setCardUpdated] = useState(false);
   const [showCancel, setShowCancel] = useState(false);
   const [showPause, setShowPause] = useState(false);
   const [showPinChange, setShowPinChange] = useState(false);
@@ -462,21 +461,6 @@ function PortalDashboardPage() {
           </form>
         )}
       </div>
-
-      {/* Card Updated Success */}
-      {cardUpdated && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-sm border border-border bg-card p-6 text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center bg-emerald-500/10">
-              <CheckCircle weight="BoldDuotone" className="h-6 w-6 text-emerald-500" />
-            </div>
-            <h3 className="mt-3 text-lg font-semibold tracking-tight text-foreground">Card updated</h3>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Your payment method has been updated successfully.
-            </p>
-          </div>
-        </div>
-      )}
 
       {/* Cancel Confirmation Modal */}
       {showCancel && (
