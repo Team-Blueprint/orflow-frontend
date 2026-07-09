@@ -22,8 +22,15 @@ function ScrollToTop() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
+    let ticking = false;
     function onScroll() {
-      setVisible(window.scrollY > 300);
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          setVisible(window.scrollY > 300);
+          ticking = false;
+        });
+        ticking = true;
+      }
     }
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);

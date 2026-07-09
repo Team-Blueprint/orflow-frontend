@@ -182,9 +182,9 @@ export function Footer() {
           </div>
           {Object.entries(footerColumns).map(([heading, links]) => (
             <div key={heading}>
-              <h4 className="mb-4 text-xs font-semibold uppercase tracking-widest text-zinc-400">
+              <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-zinc-400">
                 {heading}
-              </h4>
+              </h2>
               <ul className="flex flex-col gap-3">
                 {links.map((link) => (
                   <li key={link.label}>

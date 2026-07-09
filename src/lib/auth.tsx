@@ -26,22 +26,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<Tenant | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  const fetchUser = useCallback(async () => {
-    try {
-      const { data } = await apiClient.get<Tenant>("/v1/auth/me")
-      setUser(data)
-    } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 401) {
-        setUser(null)
-      }
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
-
   useEffect(() => {
-    fetchUser()
-  }, [fetchUser])
+    const key = localStorage.getItem(LS_API_KEY)
+    if (!key) {
+      setIsLoading(false)
+      return
+    }
+
+    let cancelled = false
+    ;(async () => {
+      try {
+        const { data } = await apiClient.get<Tenant>("/v1/auth/me")
+        if (!cancelled) setUser(data)
+      } catch (error) {
+        if (!cancelled && axios.isAxiosError(error) && error.response?.status === 401) {
+          setUser(null)
+        }
+      } finally {
+        if (!cancelled) setIsLoading(false)
+      }
+    })()
+
+    return () => { cancelled = true }
+  }, [])
 
   const login = useCallback(async (email: string, password: string) => {
     const { data } = await apiClient.post<{ tenant: Tenant }>("/v1/auth/signin", { email, password })
