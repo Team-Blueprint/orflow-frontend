@@ -96,6 +96,29 @@ export function useResumePortalSubscription() {
   })
 }
 
+export function useCreateCardUpdateCheckout() {
+  return useMutation({
+    mutationFn: async () => {
+      const res = await apiClient.post<{ checkout_link: string }>(
+        "/v1/portal/subscriptions/create-update-card-checkout",
+      )
+      return res.data.checkout_link
+    },
+  })
+}
+
+export function useConfirmCardUpdate() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (input: { order_reference: string }) => {
+      await apiClient.post("/v1/portal/subscriptions/confirm-update-card", input)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.portal.subscription })
+    },
+  })
+}
+
 export function useUpdatePortalPin() {
   return useMutation({
     mutationFn: async (input: { current_pin: string; new_pin: string }) => {

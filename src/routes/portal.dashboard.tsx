@@ -1,13 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import {
-  useNombaCheckout,
-  InitializeNombaCheckout,
-} from "react-nomba-checkout-sdk";
-import {
   usePortalSubscription,
   usePortalBillingHistory,
-  useUpdatePortalCard,
+  useCreateCardUpdateCheckout,
   useCancelPortalSubscription,
   usePausePortalSubscription,
   useResumePortalSubscription,
@@ -16,7 +12,6 @@ import {
 import { getPortalToken, getPortalSlug, clearPortalSession, getPortalCustomerName } from "@/lib/portal-auth";
 import { useToast } from "@/components/webhooks/utils/toast";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
-import { isTestMode } from "@/lib/environment";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { DataTable } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
@@ -28,9 +23,6 @@ import { Card, DangerTriangle, CheckCircle, Eye } from "@solar-icons/react";
 export const Route = createFileRoute("/portal/dashboard")({
   component: PortalDashboardPage,
 });
-
-const NOMBA_CLIENT_ID = import.meta.env.VITE_NOMBA_CLIENT_ID ?? "";
-const NOMBA_ACCOUNT_ID = import.meta.env.VITE_NOMBA_ACCOUNT_ID ?? "";
 
 function formatDate(dateStr: string | null): string {
   if (!dateStr) return "—";
@@ -47,10 +39,6 @@ function PortalDashboardPage() {
   const slug = getPortalSlug();
 
   useEffect(() => {
-    InitializeNombaCheckout();
-  }, []);
-
-  useEffect(() => {
     if (!token) {
       if (slug) {
         navigate({ to: "/portal/access/$tokenSlug", params: { tokenSlug: slug }, replace: true });
@@ -62,7 +50,7 @@ function PortalDashboardPage() {
 
   const { data: subscription, isLoading, error } = usePortalSubscription();
   const { data: billing } = usePortalBillingHistory();
-  const updateCard = useUpdatePortalCard();
+  const createCheckout = useCreateCardUpdateCheckout();
   const cancelSub = useCancelPortalSubscription();
   const pauseSub = usePausePortalSubscription();
   const resumeSub = useResumePortalSubscription();
@@ -95,73 +83,14 @@ function PortalDashboardPage() {
     }
   }, [navigate, slug]);
 
-  async function handleNombaCardUpdate() {
-    const clientId = NOMBA_CLIENT_ID;
-    const accountId = NOMBA_ACCOUNT_ID;
-    if (!clientId || !accountId) {
-      return;
-    }
-
+  async function handleCardUpdate() {
     setCardUpdating(true);
-
     try {
-      await useNombaCheckout({
-        accountId,
-        clientId,
-        environment: isTestMode() ? "sandbox" : "live",
-        order: {
-          orderReference: crypto.randomUUID(),
-          customerId: clientId,
-          accountId,
-          callbackUrl: window.location.origin + "/portal/dashboard",
-          customerEmail: "",
-          amount: "0.00",
-          currency: "NGN",
-        },
-        tokenizeCard: true,
-        onCreateOrder: () => {},
-        onFailure: () => {
-          setCardUpdating(false);
-        },
-        onClose: () => {
-          setCardUpdating(false);
-          return {};
-        },
-        onPaymentSuccess: async (response) => {
-          setCardUpdating(false);
-          const tokenKey =
-            (response as any)?.tokenKey ??
-            (response as any)?.tokenizedCardData?.tokenKey ??
-            (response as any)?.data?.tokenKey;
-          const cardType =
-            (response as any)?.cardType ??
-            (response as any)?.tokenizedCardData?.cardType;
-          const cardLast4 =
-            (response as any)?.cardLast4Digits ??
-            (response as any)?.tokenizedCardData?.cardLast4Digits;
-
-          if (tokenKey) {
-            updateCard.mutate(
-              {
-                payment_token: tokenKey,
-                card_brand: cardType,
-                card_last4: cardLast4,
-              },
-              {
-                onSuccess: () => {
-                  setCardUpdated(true);
-                  setTimeout(() => setCardUpdated(false), 3000);
-                },
-                onError: () => {
-                  handleAuthError();
-                },
-              },
-            );
-          }
-        },
-      });
+      const checkoutLink = await createCheckout.mutateAsync();
+      window.location.href = checkoutLink;
     } catch {
       setCardUpdating(false);
+      toast.error("Could not start card update. Try again later.");
     }
   }
 
@@ -308,7 +237,7 @@ function PortalDashboardPage() {
                     variant="destructive"
                     size="sm"
                     className="mt-3 min-h-[44px]"
-                    onClick={handleNombaCardUpdate}
+                    onClick={handleCardUpdate}
                     disabled={cardUpdating}
                   >
                     {cardUpdating ? "Opening…" : "Reactivate subscription"}
@@ -324,7 +253,7 @@ function PortalDashboardPage() {
                     variant="destructive"
                     size="sm"
                     className="mt-3 min-h-[44px]"
-                    onClick={handleNombaCardUpdate}
+                    onClick={handleCardUpdate}
                     disabled={cardUpdating}
                   >
                     {cardUpdating ? "Opening…" : "Update payment method"}
@@ -381,7 +310,7 @@ function PortalDashboardPage() {
             variant="outline"
             size="sm"
             className="mt-3 min-h-[44px]"
-            onClick={handleNombaCardUpdate}
+            onClick={handleCardUpdate}
             disabled={cardUpdating}
           >
             {cardUpdating ? "Opening…" : "Update card"}

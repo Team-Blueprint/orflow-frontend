@@ -20,6 +20,7 @@ import { Route as PortalIndexRouteImport } from './routes/portal.index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
 import { Route as SubscribeCodeRouteImport } from './routes/subscribe.$code'
 import { Route as PortalDashboardRouteImport } from './routes/portal.dashboard'
+import { Route as PortalCardUpdateCallbackRouteImport } from './routes/portal.card-update-callback'
 import { Route as PortalCallbackRouteImport } from './routes/portal.callback'
 import { Route as DashboardSettingsRouteImport } from './routes/dashboard.settings'
 import { Route as DashboardNewRouteImport } from './routes/dashboard.new'
@@ -92,6 +93,12 @@ const PortalDashboardRoute = PortalDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => PortalRoute,
 } as any)
+const PortalCardUpdateCallbackRoute =
+  PortalCardUpdateCallbackRouteImport.update({
+    id: '/card-update-callback',
+    path: '/card-update-callback',
+    getParentRoute: () => PortalRoute,
+  } as any)
 const PortalCallbackRoute = PortalCallbackRouteImport.update({
   id: '/callback',
   path: '/callback',
@@ -192,6 +199,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/new': typeof DashboardNewRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/portal/callback': typeof PortalCallbackRoute
+  '/portal/card-update-callback': typeof PortalCardUpdateCallbackRoute
   '/portal/dashboard': typeof PortalDashboardRoute
   '/subscribe/$code': typeof SubscribeCodeRoute
   '/dashboard/': typeof DashboardIndexRoute
@@ -218,6 +226,7 @@ export interface FileRoutesByTo {
   '/dashboard/new': typeof DashboardNewRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/portal/callback': typeof PortalCallbackRoute
+  '/portal/card-update-callback': typeof PortalCardUpdateCallbackRoute
   '/portal/dashboard': typeof PortalDashboardRoute
   '/subscribe/$code': typeof SubscribeCodeRoute
   '/dashboard': typeof DashboardIndexRoute
@@ -247,6 +256,7 @@ export interface FileRoutesById {
   '/dashboard/new': typeof DashboardNewRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/portal/callback': typeof PortalCallbackRoute
+  '/portal/card-update-callback': typeof PortalCardUpdateCallbackRoute
   '/portal/dashboard': typeof PortalDashboardRoute
   '/subscribe/$code': typeof SubscribeCodeRoute
   '/dashboard/': typeof DashboardIndexRoute
@@ -278,6 +288,7 @@ export interface FileRouteTypes {
     | '/dashboard/new'
     | '/dashboard/settings'
     | '/portal/callback'
+    | '/portal/card-update-callback'
     | '/portal/dashboard'
     | '/subscribe/$code'
     | '/dashboard/'
@@ -304,6 +315,7 @@ export interface FileRouteTypes {
     | '/dashboard/new'
     | '/dashboard/settings'
     | '/portal/callback'
+    | '/portal/card-update-callback'
     | '/portal/dashboard'
     | '/subscribe/$code'
     | '/dashboard'
@@ -332,6 +344,7 @@ export interface FileRouteTypes {
     | '/dashboard/new'
     | '/dashboard/settings'
     | '/portal/callback'
+    | '/portal/card-update-callback'
     | '/portal/dashboard'
     | '/subscribe/$code'
     | '/dashboard/'
@@ -438,6 +451,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/portal/dashboard'
       preLoaderRoute: typeof PortalDashboardRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/portal/card-update-callback': {
+      id: '/portal/card-update-callback'
+      path: '/card-update-callback'
+      fullPath: '/portal/card-update-callback'
+      preLoaderRoute: typeof PortalCardUpdateCallbackRouteImport
       parentRoute: typeof PortalRoute
     }
     '/portal/callback': {
@@ -612,6 +632,7 @@ const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
 
 interface PortalRouteChildren {
   PortalCallbackRoute: typeof PortalCallbackRoute
+  PortalCardUpdateCallbackRoute: typeof PortalCardUpdateCallbackRoute
   PortalDashboardRoute: typeof PortalDashboardRoute
   PortalIndexRoute: typeof PortalIndexRoute
   PortalAccessTokenSlugRoute: typeof PortalAccessTokenSlugRoute
@@ -620,6 +641,7 @@ interface PortalRouteChildren {
 
 const PortalRouteChildren: PortalRouteChildren = {
   PortalCallbackRoute: PortalCallbackRoute,
+  PortalCardUpdateCallbackRoute: PortalCardUpdateCallbackRoute,
   PortalDashboardRoute: PortalDashboardRoute,
   PortalIndexRoute: PortalIndexRoute,
   PortalAccessTokenSlugRoute: PortalAccessTokenSlugRoute,
