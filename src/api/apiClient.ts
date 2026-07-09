@@ -37,7 +37,9 @@ apiClient.interceptors.request.use((config) => {
   if (isTestMode()) config.headers.set("X-Test-Mode", "true");
 
   const portalToken = getPortalToken();
-  if (portalToken) config.headers.setAuthorization(`Bearer ${portalToken}`);
+  if (portalToken && config.url?.startsWith('/v1/portal/')) {
+    config.headers.setAuthorization(`Bearer ${portalToken}`);
+  }
 
   const csrfToken = getCsrfToken();
   if (

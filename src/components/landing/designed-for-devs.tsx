@@ -10,13 +10,13 @@ const devResources = [
     href: "/docs",
     desc: "Read our guides and API docs",
     code: `# Quick start — create a plan
-curl -X POST https://api.orflow.io/v1/plans/create \\
+curl -X POST https://orflow-backend.onrender.com/v1/plans/create \\
   -H "Authorization: Bearer sk_..." \\
   -H "Content-Type: application/json" \\
   -d '{"name":"Starter","amount":1999,"currency":"NGN","interval":"monthly"}'
 
 # Generate a checkout for your customer
-curl -X POST https://api.orflow.io/v1/checkouts \\
+curl -X POST https://orflow-backend.onrender.com/v1/checkouts \\
   -H "Authorization: Bearer sk_..." \\
   -d '{"plan_id":"plan_abc123","customer_email":"user@example.com"}'
 
@@ -30,12 +30,12 @@ curl -X POST https://api.orflow.io/v1/checkouts \\
     href: "/api-reference",
     desc: "Explore every endpoint and schema",
     code: `# Create a plan
-curl -X POST https://api.orflow.io/v1/plans/create \\
+curl -X POST https://orflow-backend.onrender.com/v1/plans/create \\
   -H "Authorization: Bearer sk_..." \\
   -d '{"name":"Pro","amount":2999,"currency":"NGN","interval":"monthly"}'
 
 # Generate a checkout link
-curl -X POST https://api.orflow.io/v1/checkouts \\
+curl -X POST https://orflow-backend.onrender.com/v1/checkouts \\
   -H "Authorization: Bearer sk_..." \\
   -d '{"plan_id":"plan_abc123","customer_email":"user@example.com"}'
 

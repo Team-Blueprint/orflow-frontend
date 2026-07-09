@@ -6,7 +6,7 @@ import { fadeUp, stagger, bScale } from "./animations"
 
 const codeSnippets = {
   curl: `# Create a monthly plan
-curl -X POST https://api.orflow.io/plans \\
+curl -X POST https://orflow-backend.onrender.com/plans \\
   -H "Authorization: Bearer sk_..." \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -18,7 +18,7 @@ curl -X POST https://api.orflow.io/plans \\
   }'
 
 # Generate a checkout link (card tokenized via Nomba)
-curl -X POST https://api.orflow.io/checkouts \\
+curl -X POST https://orflow-backend.onrender.com/checkouts \\
   -H "Authorization: Bearer sk_..." \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -29,7 +29,7 @@ curl -X POST https://api.orflow.io/checkouts \\
 # Orflow handles recurring charges, proration, dunning & webhooks`,
   python: `import requests
 
-api = "https://api.orflow.io"
+api = "https://orflow-backend.onrender.com"
 headers = {"Authorization": "Bearer sk_..."}
 
 # Create a monthly plan
@@ -48,7 +48,7 @@ checkout = requests.post(f"{api}/checkouts", headers=headers, json={
 }).json()
 
 print(checkout["url"])`,
-  javascript: `const api = "https://api.orflow.io"
+  javascript: `const api = "https://orflow-backend.onrender.com"
 const headers = {
   Authorization: "Bearer sk_...",
   "Content-Type": "application/json",

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
 import { apiClient } from "@/api/apiClient";
-import { setPortalSlug } from "@/lib/portal-auth";
+import { setPortalSlug, setPortalCustomerName } from "@/lib/portal-auth";
 import { CheckCircle, DangerTriangle } from "@solar-icons/react";
 
 export const Route = createFileRoute("/portal/callback")({
@@ -43,6 +43,7 @@ function PortalCallbackPage() {
       .then((res) => {
         if (res.data.success && res.data.portal_token_slug) {
           setPortalSlug(res.data.portal_token_slug)
+          if (res.data.customer_name) setPortalCustomerName(res.data.customer_name)
           navigate({
             to: "/portal/access/$tokenSlug",
             params: { tokenSlug: res.data.portal_token_slug },

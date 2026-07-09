@@ -61,25 +61,37 @@ export function useUpdatePortalCard() {
 }
 
 export function useCancelPortalSubscription() {
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async () => {
       await apiClient.post("/v1/portal/subscriptions/cancel")
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.portal.subscription })
     },
   })
 }
 
 export function usePausePortalSubscription() {
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async () => {
       await apiClient.post("/v1/portal/subscriptions/pause")
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.portal.subscription })
     },
   })
 }
 
 export function useResumePortalSubscription() {
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async () => {
       await apiClient.post("/v1/portal/subscriptions/resume")
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.portal.subscription })
     },
   })
 }
@@ -132,6 +144,19 @@ export function useCreatePortalSubscription(code: string) {
       )
       return { checkoutLink: res.data.checkout_link, orderReference: res.data.order_reference }
     },
+  })
+}
+
+export function usePortalAccessInfo(tokenSlug: string) {
+  return useQuery({
+    queryKey: ["portal", "access-info", tokenSlug],
+    queryFn: async () => {
+      const res = await apiClient.get<{ name: string }>(
+        `/v1/portal/access/${tokenSlug}`,
+      )
+      return res.data
+    },
+    retry: false,
   })
 }
 

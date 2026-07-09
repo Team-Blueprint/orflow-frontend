@@ -13,7 +13,8 @@ import {
   useResumePortalSubscription,
   useUpdatePortalPin,
 } from "@/lib/portal-queries";
-import { getPortalToken, getPortalSlug, clearPortalSession } from "@/lib/portal-auth";
+import { getPortalToken, getPortalSlug, clearPortalSession, getPortalCustomerName } from "@/lib/portal-auth";
+import { useToast } from "@/components/webhooks/utils/toast";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { isTestMode } from "@/lib/environment";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -81,6 +82,9 @@ function PortalDashboardPage() {
   useDocumentTitle(
     subscription ? `${subscription.plan_name} Billing Portal` : "Billing Portal",
   );
+
+  const toast = useToast();
+  const customerName = getPortalCustomerName();
 
   const handleAuthError = useCallback(() => {
     clearPortalSession();
@@ -162,22 +166,41 @@ function PortalDashboardPage() {
   }
 
   function handleCancelConfirm() {
+    toast.loading("Cancelling subscription…");
     cancelSub.mutate(undefined, {
-      onSuccess: () => setShowCancel(false),
-      onError: () => handleAuthError(),
+      onSuccess: () => {
+        toast.success("Subscription cancelled");
+        setShowCancel(false);
+      },
+      onError: () => {
+        toast.error("Could not cancel subscription");
+        handleAuthError();
+      },
     });
   }
 
   function handlePauseConfirm() {
+    toast.loading("Pausing subscription…");
     pauseSub.mutate(undefined, {
-      onSuccess: () => setShowPause(false),
-      onError: () => handleAuthError(),
+      onSuccess: () => {
+        toast.success("Subscription paused");
+        setShowPause(false);
+      },
+      onError: () => {
+        toast.error("Could not pause subscription");
+        handleAuthError();
+      },
     });
   }
 
   function handleResume() {
+    toast.loading("Resuming subscription…");
     resumeSub.mutate(undefined, {
-      onError: () => handleAuthError(),
+      onSuccess: () => toast.success("Subscription resumed"),
+      onError: () => {
+        toast.error("Could not resume subscription");
+        handleAuthError();
+      },
     });
   }
 
@@ -262,7 +285,7 @@ function PortalDashboardPage() {
       {/* Greeting */}
       <div className="mb-8">
         <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          Subscription
+          {customerName ? `${customerName}'s Subscription` : "Subscription"}
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Manage your {subscription.plan_name} subscription
