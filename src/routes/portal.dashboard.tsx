@@ -13,6 +13,7 @@ import { getPortalToken, getPortalSlug, clearPortalSession, getPortalCustomerNam
 import { useToast } from "@/components/webhooks/utils/toast";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -211,13 +212,23 @@ function PortalDashboardPage() {
   return (
     <div className="mx-auto max-w-3xl px-6 py-10">
       {/* Greeting */}
-      <div className="mb-8">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          {customerName ? `${customerName}'s Subscription` : "Subscription"}
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Manage your {subscription.plan_name} subscription
-        </p>
+      <div className="mb-8 flex items-start justify-between">
+        <div>
+          <h1 className="text-xl font-semibold tracking-tight text-foreground">
+            {customerName ? `${customerName}'s Subscription` : "Subscription"}
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Manage your {subscription.plan_name} subscription
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          className="min-h-[44px]"
+          onClick={() => { clearPortalSession(); navigate({ to: "/", replace: true }) }}
+        >
+          Log out
+        </Button>
       </div>
 
       {/* Status Banner */}
@@ -335,24 +346,36 @@ function PortalDashboardPage() {
             {
               key: "status",
               header: "Status",
-              cell: (r) => (
-                <StatusBadge status={r.status} />
-              ),
+              cell: (r) => {
+                const map: Record<string, "success" | "destructive" | "info" | "muted"> = {
+                  success: "success",
+                  failed: "destructive",
+                  pending: "info",
+                }
+                return <Badge variant={map[r.status] ?? "muted"}>{r.status}</Badge>
+              },
             },
           ]}
           data={(billing ?? []).map((r, i) => ({ ...r, id: `pmt_${i}` }))}
           emptyMessage="No billing records yet."
-          renderMobileCard={(r) => (
-            <div className="flex items-center justify-between px-4 py-3 min-h-[44px]">
-              <div>
-                <p className="font-mono tabular-nums text-sm text-foreground">
-                  {r.currency} {formatAmount(r.amount)}
-                </p>
-                <p className="text-xs text-muted-foreground">{formatDate(r.date)}</p>
-              </div>
-              <StatusBadge status={r.status} />
+          renderMobileCard={(r) => {
+            const map: Record<string, "success" | "destructive" | "info" | "muted"> = {
+              success: "success",
+              failed: "destructive",
+              pending: "info",
+            }
+            return (
+              <div className="flex items-center justify-between px-4 py-3 min-h-[44px]">
+                <div>
+                  <p className="font-mono tabular-nums text-sm text-foreground">
+                    {r.currency} {formatAmount(r.amount)}
+                  </p>
+                  <p className="text-xs text-muted-foreground">{formatDate(r.date)}</p>
+                </div>
+                <Badge variant={map[r.status] ?? "muted"}>{r.status}</Badge>
             </div>
-          )}
+          )
+        }}
         />
       </div>
 

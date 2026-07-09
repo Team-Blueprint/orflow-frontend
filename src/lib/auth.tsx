@@ -1,5 +1,4 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react"
-import axios from "axios"
 import { apiClient, LS_API_KEY } from "@/api/apiClient"
 
 interface Tenant {
@@ -27,21 +26,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const key = localStorage.getItem(LS_API_KEY)
-    if (!key) {
-      setIsLoading(false)
-      return
-    }
-
     let cancelled = false
     ;(async () => {
       try {
         const { data } = await apiClient.get<Tenant>("/v1/auth/me")
-        if (!cancelled) setUser(data)
-      } catch (error) {
-        if (!cancelled && axios.isAxiosError(error) && error.response?.status === 401) {
-          setUser(null)
+        if (!cancelled) {
+          setUser(data)
+          if (!localStorage.getItem(LS_API_KEY)) {
+            try {
+              const keyRes = await apiClient.get<{ sk_test: string | null }>("/v1/auth/keys/new")
+              if (keyRes.data.sk_test) {
+                localStorage.setItem(LS_API_KEY, keyRes.data.sk_test)
+              }
+            } catch {
+              // Keys can be fetched later from Developer Settings
+            }
+          }
         }
+      } catch {
+        // 401 or network error — stay unauthenticated
       } finally {
         if (!cancelled) setIsLoading(false)
       }
