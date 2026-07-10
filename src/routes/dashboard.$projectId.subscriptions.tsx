@@ -70,7 +70,7 @@ function SubscriptionsPage() {
     navigate({
       to: "/dashboard/$projectId/subscriptions",
       params: { projectId },
-      search: value ? { plan_id: value } : {},
+      search: { plan_id: value || undefined },
       replace: true,
     })
   }
