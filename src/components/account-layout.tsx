@@ -2,7 +2,6 @@ import { useState, useRef, useEffect, type ReactNode } from "react"
 import { useAuth } from "@/lib/auth"
 import { useNavigate } from "@tanstack/react-router"
 import { LogoIcon } from "@/components/icons"
-import { useEnv } from "@/lib/environment"
 
 interface AccountLayoutProps {
   children: ReactNode
@@ -11,7 +10,6 @@ interface AccountLayoutProps {
 
 export function AccountLayout({ children, breadcrumb }: AccountLayoutProps) {
   const { user, logout } = useAuth()
-  const { isTest } = useEnv()
   const navigate = useNavigate()
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const userMenuRef = useRef<HTMLDivElement>(null)
@@ -49,9 +47,6 @@ export function AccountLayout({ children, breadcrumb }: AccountLayoutProps) {
           </div>
 
           <div ref={userMenuRef} className="relative flex items-center gap-2">
-            <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 border leading-none select-none ${isTest ? "bg-amber-500/20 text-amber-400 border-amber-500/30" : "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"}`}>
-              {isTest ? "TEST" : "LIVE"}
-            </span>
             <button
               type="button"
               onClick={() => setUserMenuOpen((o) => !o)}

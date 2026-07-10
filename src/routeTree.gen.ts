@@ -22,7 +22,6 @@ import { Route as SubscribeCodeRouteImport } from './routes/subscribe.$code'
 import { Route as PortalDashboardRouteImport } from './routes/portal.dashboard'
 import { Route as PortalCardUpdateCallbackRouteImport } from './routes/portal.card-update-callback'
 import { Route as PortalCallbackRouteImport } from './routes/portal.callback'
-import { Route as DashboardSettingsRouteImport } from './routes/dashboard.settings'
 import { Route as DashboardNewRouteImport } from './routes/dashboard.new'
 import { Route as DashboardProjectIdRouteImport } from './routes/dashboard.$projectId'
 import { Route as AdminReconciliationRouteImport } from './routes/admin.reconciliation'
@@ -103,11 +102,6 @@ const PortalCallbackRoute = PortalCallbackRouteImport.update({
   id: '/callback',
   path: '/callback',
   getParentRoute: () => PortalRoute,
-} as any)
-const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardNewRoute = DashboardNewRouteImport.update({
   id: '/new',
@@ -197,7 +191,6 @@ export interface FileRoutesByFullPath {
   '/admin/reconciliation': typeof AdminReconciliationRoute
   '/dashboard/$projectId': typeof DashboardProjectIdRouteWithChildren
   '/dashboard/new': typeof DashboardNewRoute
-  '/dashboard/settings': typeof DashboardSettingsRoute
   '/portal/callback': typeof PortalCallbackRoute
   '/portal/card-update-callback': typeof PortalCardUpdateCallbackRoute
   '/portal/dashboard': typeof PortalDashboardRoute
@@ -224,7 +217,6 @@ export interface FileRoutesByTo {
   '/subscribe': typeof SubscribeRouteWithChildren
   '/admin/reconciliation': typeof AdminReconciliationRoute
   '/dashboard/new': typeof DashboardNewRoute
-  '/dashboard/settings': typeof DashboardSettingsRoute
   '/portal/callback': typeof PortalCallbackRoute
   '/portal/card-update-callback': typeof PortalCardUpdateCallbackRoute
   '/portal/dashboard': typeof PortalDashboardRoute
@@ -254,7 +246,6 @@ export interface FileRoutesById {
   '/admin/reconciliation': typeof AdminReconciliationRoute
   '/dashboard/$projectId': typeof DashboardProjectIdRouteWithChildren
   '/dashboard/new': typeof DashboardNewRoute
-  '/dashboard/settings': typeof DashboardSettingsRoute
   '/portal/callback': typeof PortalCallbackRoute
   '/portal/card-update-callback': typeof PortalCardUpdateCallbackRoute
   '/portal/dashboard': typeof PortalDashboardRoute
@@ -286,7 +277,6 @@ export interface FileRouteTypes {
     | '/admin/reconciliation'
     | '/dashboard/$projectId'
     | '/dashboard/new'
-    | '/dashboard/settings'
     | '/portal/callback'
     | '/portal/card-update-callback'
     | '/portal/dashboard'
@@ -313,7 +303,6 @@ export interface FileRouteTypes {
     | '/subscribe'
     | '/admin/reconciliation'
     | '/dashboard/new'
-    | '/dashboard/settings'
     | '/portal/callback'
     | '/portal/card-update-callback'
     | '/portal/dashboard'
@@ -342,7 +331,6 @@ export interface FileRouteTypes {
     | '/admin/reconciliation'
     | '/dashboard/$projectId'
     | '/dashboard/new'
-    | '/dashboard/settings'
     | '/portal/callback'
     | '/portal/card-update-callback'
     | '/portal/dashboard'
@@ -466,13 +454,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/portal/callback'
       preLoaderRoute: typeof PortalCallbackRouteImport
       parentRoute: typeof PortalRoute
-    }
-    '/dashboard/settings': {
-      id: '/dashboard/settings'
-      path: '/settings'
-      fullPath: '/dashboard/settings'
-      preLoaderRoute: typeof DashboardSettingsRouteImport
-      parentRoute: typeof DashboardRoute
     }
     '/dashboard/new': {
       id: '/dashboard/new'
@@ -615,14 +596,12 @@ const DashboardProjectIdRouteWithChildren =
 interface DashboardRouteChildren {
   DashboardProjectIdRoute: typeof DashboardProjectIdRouteWithChildren
   DashboardNewRoute: typeof DashboardNewRoute
-  DashboardSettingsRoute: typeof DashboardSettingsRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardProjectIdRoute: DashboardProjectIdRouteWithChildren,
   DashboardNewRoute: DashboardNewRoute,
-  DashboardSettingsRoute: DashboardSettingsRoute,
   DashboardIndexRoute: DashboardIndexRoute,
 }
 

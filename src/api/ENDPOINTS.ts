@@ -69,6 +69,12 @@ export const ENDPOINTS = {
     GET: (projectId: string) => `/v1/projects/${projectId}`,
     UPDATE: (projectId: string) => `/v1/projects/${projectId}/update`,
     DELETE: (projectId: string) => `/v1/projects/${projectId}/del`,
+    KEYS: {
+      LIST: (projectId: string) => `/v1/projects/${projectId}/keys`,
+      CREATE: (projectId: string) => `/v1/projects/${projectId}/keys/create`,
+      REGENERATE: (projectId: string) => `/v1/projects/${projectId}/keys/regenerate`,
+      REVOKE: (projectId: string) => `/v1/projects/${projectId}/keys/revoke`,
+    },
   },
   ANALYTICS: {
     GET: (projectId: string) => `/v1/projects/${projectId}/analytics`,

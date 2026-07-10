@@ -1,8 +1,11 @@
 import { useState, useMemo } from "react"
-import { createFileRoute, useParams } from "@tanstack/react-router"
+import { createFileRoute, useParams, useNavigate } from "@tanstack/react-router"
+import { useQuery } from "@tanstack/react-query"
 import { useSubscriptions, useCancelSubscription, usePauseSubscription, useResumeSubscription, useSubscriptionAuditLog } from "@/api/hooks/useSubscriptions"
 import { useDocumentTitle } from "@/hooks/useDocumentTitle"
 import type { Subscription, AuditLogEntry } from "@/api/types/subscriptions"
+import { apiClient } from "@/api/apiClient"
+import { ENDPOINTS } from "@/api/ENDPOINTS"
 import { formatNaira } from "@/lib/currency"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
@@ -11,8 +14,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog as DialogPrimitive } from "radix-ui"
 import { ChartSquare, Refresh } from "@/lib/icons"
 import { useToast } from "@/components/webhooks/utils/toast"
+import { SubscriptionsSkeleton } from "@/components/skeletons/subscriptions-skeleton"
 
 export const Route = createFileRoute("/dashboard/$projectId/subscriptions")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    plan_id: search.plan_id as string | undefined,
+  }),
   component: SubscriptionsPage,
 })
 
@@ -31,19 +38,42 @@ const STATUS_BADGE: Record<string, "success" | "destructive" | "muted" | "info">
   incomplete_expired: "muted",
 }
 
+interface Plan {
+  id: string
+  name: string
+}
+
 function SubscriptionsPage() {
   const { projectId } = useParams({ from: "/dashboard/$projectId/subscriptions" })
+  const navigate = useNavigate()
+  const { plan_id } = Route.useSearch() as { plan_id?: string }
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [activeId, setActiveId] = useState<string | null>(null)
   const [mobileOpen, setMobileOpen] = useState(false)
 
-  const { data: subscriptions = [], isLoading, refetch } = useSubscriptions(projectId)
+  const { data: plans = [] } = useQuery<Plan[]>({
+    queryKey: ["plans", projectId],
+    queryFn: () => apiClient.get(ENDPOINTS.PLANS.LIST).then(res => res.data),
+  })
+
+  const planFilter = plan_id ?? ""
+
+  const { data: subscriptions = [], isLoading, refetch } = useSubscriptions(projectId, planFilter || undefined)
   const cancelMutation = useCancelSubscription(projectId)
   const pauseMutation = usePauseSubscription(projectId)
   const resumeMutation = useResumeSubscription(projectId)
   const { data: auditLog = [] } = useSubscriptionAuditLog(activeId)
   const toast = useToast()
+
+  function setPlanFilter(value: string) {
+    navigate({
+      to: "/dashboard/$projectId/subscriptions",
+      params: { projectId },
+      search: value ? { plan_id: value } : {},
+      replace: true,
+    })
+  }
 
   const filtered = useMemo(() => {
     return subscriptions.filter((s) => {
@@ -133,6 +163,17 @@ function SubscriptionsPage() {
       </div>
 
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
+        <Select value={planFilter || "all"} onValueChange={(v) => setPlanFilter(v === "all" ? "" : v)}>
+          <SelectTrigger className="w-44">
+            <SelectValue placeholder="All plans" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All plans</SelectItem>
+            {plans.map((p) => (
+              <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-40">
             <SelectValue placeholder="All statuses" />
@@ -154,9 +195,7 @@ function SubscriptionsPage() {
       </div>
 
       {isLoading ? (
-        <div className="border border-hairline bg-paper p-8 flex items-center justify-center">
-          <div className="h-5 w-5 animate-spin rounded-full border border-hairline-strong border-t-transparent" />
-        </div>
+        <SubscriptionsSkeleton />
       ) : (
         <>
           {/* Desktop split layout */}

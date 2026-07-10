@@ -160,15 +160,6 @@ bun run preview
 - Each member has their own dashboard access scoped to assigned projects
 - Activity audit log per project (who changed what)
 
-### Project-Scoped API Keys
-
-Currently, API keys are tenant-wide — a single `sk_test` works across all projects, requiring `X-Project-ID` header to target a specific project.
-
-- Allow generating API keys that are scoped to a single project
-- A project-scoped key would remove the need for the `X-Project-ID` header on every request
-- Simplify integration: one project → one key → no additional headers
-- Deprecate tenant-wide keys for production use
-
 ### Additional Features
 
 - **Multi-currency support** — Allow plans in different currencies within the same project

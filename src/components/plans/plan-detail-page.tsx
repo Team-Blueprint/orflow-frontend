@@ -339,6 +339,7 @@ export function PlanDetailPage() {
                     <Link
                       to="/dashboard/$projectId/subscriptions"
                       params={{ projectId } as any}
+                      search={{ plan_id: planId }}
                       className="text-xs font-medium text-primary hover:text-primary-hover transition-colors cursor-pointer"
                     >
                       &rarr; See all subscriptions ({subscriptions.length})

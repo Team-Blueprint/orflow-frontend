@@ -3,13 +3,13 @@ import { apiClient } from "@/api/apiClient"
 import { ENDPOINTS } from "@/api/ENDPOINTS"
 import type { Subscription, AuditLogEntry } from "@/api/types/subscriptions"
 
-export function useSubscriptions(projectId: string) {
+export function useSubscriptions(projectId: string, planId?: string) {
   return useQuery({
-    queryKey: ["subscriptions", projectId],
+    queryKey: ["subscriptions", projectId, planId],
     queryFn: () =>
       apiClient.get<Subscription[]>(
         ENDPOINTS.SUBSCRIPTIONS.LIST,
-        { params: { projectId } },
+        { params: { projectId, ...(planId ? { plan_id: planId } : {}) } },
       ).then(res => res.data.map(mapSubscription)),
   })
 }

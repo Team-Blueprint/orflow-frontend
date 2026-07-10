@@ -21,6 +21,8 @@ function NewProject() {
     setIsCreating(true)
     try {
       const { data } = await apiClient.post("/v1/projects/create", { name, description })
+      apiClient.post(`/v1/projects/${data.id}/keys/create`, { key_type: "pk_test" }).catch(() => {})
+      apiClient.post(`/v1/projects/${data.id}/keys/create`, { key_type: "sk_test" }).catch(() => {})
       setActiveProjectId(data.id)
       navigate({ to: "/dashboard/$projectId", params: { projectId: data.id } })
     } catch (err) {
